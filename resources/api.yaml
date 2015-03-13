@@ -2,7 +2,7 @@ swagger: '2.0'
 info:
   title: Kio API
   description: Kio manages applications
-  version: "1.0.0"
+  version: "1.0"
 host: kio.stups.example.org
 schemes:
   - https
@@ -43,6 +43,7 @@ paths:
           in: path
           type: string
           description: ID of the application
+          pattern: "^[a-z][a-z0-9-]+$"
           required: true
       responses:
         200:
@@ -98,10 +99,35 @@ paths:
           in: path
           type: string
           description: ID of the application
+          pattern: "^[a-z][a-z0-9-]+$"
           required: true
       responses:
         200:
           description: Application was deleted
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+            
+  /applications/{applicationId}/secret:
+    put:
+      summary: Save application secret
+      description: Create or update the applciation's secret
+      operationId: "kio.core/saveApplicationSecret"
+      tags:
+        - Applications
+      parameters:
+        - name: applicationId
+          in: path
+          type: string
+          description: ID of the application
+          pattern: "^[a-z][a-z0-9-]+$"
+          required: true
+      responses:
+        201:
+          description: Secret was created
+        200:
+          description: Secret was updated
         default:
           description: Unexpected error
           schema:
