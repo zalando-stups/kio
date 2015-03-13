@@ -15,37 +15,39 @@
 ;
 
 (ns kio.core
+  (:use ring.util.response)
   (:require [io.sarnowski.swagger1st.core :as s1st]
             [ring.middleware.params :refer [wrap-params]]
+            [ring.middleware.json :refer [wrap-json-response]]
             [clojure.pprint :refer [pprint]])
   (:gen-class))
 
 (defn readApplications [request]
   (pprint request)
-  {:status  200
-   :body    "[{\"id\": \"kio\", \"name\": \"Kio\", \"teamId\": \"stups\"}, {\"id\": \"pierone\", \"name\": \"Pier One\", \"teamId\": \"stups\"}]"
-   :headers {"Content-Type" "application/json"}})
+  (response [{:id "kio" :name "Kio" :teamId "stups"}
+             {:id "pierone" :name "Pier One" :teamId "stups"}]))
 
 (defn readApplication [request]
   (pprint request)
-  {:status  200
-   :body    "{\"id\": \"kio\", \"name\": \"Kio\", \"teamId\": \"stups\", \"description\": \"Registry for applications\", \"url\": \"https://kio.stups.example.org\", \"scmUrl\": \"git@github.com:zalando-stups/kio.git\", \"documentationUrl\": \"http://zalando-stups.github.io\"}"
-   :headers {"Content-Type" "application/json"}})
+  (response {:id               "kio"
+             :name             "Kio"
+             :teamId           "stups"
+             :description      "The application registry"
+             :url              "https://kio.stups.example.org"
+             :scmUrl           "git@github.com:zalando-stups/kio.git"
+             :documentationUrl "http://zalando-stups.github.io"}))
 
 (defn saveApplication [request]
   (pprint request)
-  {:status  201
-   :headers {"Content-Type" "application/json"}})
+  nil)
 
 (defn deleteApplication [request]
   (pprint request)
-  {:status  200
-   :headers {"Content-Type" "application/json"}})
+  nil)
 
 (defn saveApplicationSecret [request]
   (pprint request)
-  {:status  201
-   :headers {"Content-Type" "application/json"}})
+  nil)
 
 
 (def app
@@ -53,4 +55,5 @@
       (s1st/swagger-validator)
       (s1st/swagger-parser)
       (s1st/swagger-mapper ::s1st/yaml-cp "api.yaml")
+      (wrap-json-response)
       (wrap-params)))

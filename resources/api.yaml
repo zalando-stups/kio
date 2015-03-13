@@ -29,7 +29,7 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-            
+
   /applications/{applicationId}:
     get:
       summary: Read application
@@ -47,14 +47,14 @@ paths:
           required: true
       responses:
         200:
-          description: Details of one application 
+          description: Details of one application
           schema:
             $ref: '#/definitions/Application'
         default:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-            
+
     put:
       summary: Save application
       description: |
@@ -74,14 +74,12 @@ paths:
         - name: application
           in: body
           description: Application details that will be saved
-          schema: 
+          schema:
             $ref: '#/definitions/ApplicationDetails'
           required: true
       responses:
         200:
-          description: Application was updated
-        201:
-          description: Application was created
+          description: Application was saved
         default:
           description: Unexpected error
           schema:
@@ -108,7 +106,7 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-            
+
   /applications/{applicationId}/secret:
     put:
       summary: Save application secret
@@ -124,15 +122,13 @@ paths:
           pattern: "^[a-z][a-z0-9-]+$"
           required: true
       responses:
-        201:
-          description: Secret was created
         200:
-          description: Secret was updated
+          description: Secret was saved
         default:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-        
+
 definitions:
   Application:
     properties:
@@ -150,14 +146,14 @@ definitions:
         description: Purpose of this application
       url:
         type: string
-        description: Live URL of the application 
+        description: Live URL of the application
       scmUrl:
         type: string
         description: URL of SCM repository
       documentationUrl:
         type: string
         description: URL of documentation
-        
+
   ApplicationDetails:
     properties:
       name:
@@ -172,7 +168,7 @@ definitions:
         description: Purpose of this application
       url:
         type: string
-        description: Live URL of the application 
+        description: Live URL of the application
       scmUrl:
         type: string
         description: URL of SCM repository
@@ -191,7 +187,7 @@ definitions:
       url: https://kio.stups.example.org
       scmUrl: git@github.com:zalando-stups/kio.git
       documentationUrl: https://zalando-stups.github.io
-        
+
   ApplicationSummary:
     properties:
       id:
@@ -207,7 +203,7 @@ definitions:
       id: kio
       name: Kio
       teamId: stups
-      
+
   Error:
     properties:
       code:
