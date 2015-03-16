@@ -15,7 +15,7 @@ paths:
       summary: Read applications
       description: |
         Lists all registered applications
-      operationId: "kio.core/readApplications"
+      operationId: "kio.core/read-applications"
       tags:
         - Applications
       responses:
@@ -30,16 +30,16 @@ paths:
           schema:
             $ref: '#/definitions/Error'
 
-  /applications/{applicationId}:
+  /applications/{application_id}:
     get:
       summary: Read application
       description: |
         Returns details about one application
-      operationId: "kio.core/readApplication"
+      operationId: "kio.core/read-application"
       tags:
         - Applications
       parameters:
-        - name: applicationId
+        - name: application_id
           in: path
           type: string
           description: ID of the application
@@ -50,6 +50,8 @@ paths:
           description: Details of one application
           schema:
             $ref: '#/definitions/Application'
+        404:
+          description: Not found
         default:
           description: Unexpected error
           schema:
@@ -59,13 +61,13 @@ paths:
       summary: Save application
       description: |
         Creates or updates an application
-      operationId: "kio.core/saveApplication"
+      operationId: "kio.core/save-application"
       tags:
         - Applications
       consumes:
         - application/json
       parameters:
-        - name: applicationId
+        - name: application_id
           in: path
           type: string
           description: ID of the application
@@ -89,11 +91,11 @@ paths:
       summary: Delete application
       description: |
         Deletes an application
-      operationId: "kio.core/deleteApplication"
+      operationId: "kio.core/delete-application"
       tags:
         - Applications
       parameters:
-        - name: applicationId
+        - name: application_id
           in: path
           type: string
           description: ID of the application
@@ -102,28 +104,39 @@ paths:
       responses:
         200:
           description: Application was deleted
+        404:
+          description: Not found
         default:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
 
-  /applications/{applicationId}/secret:
+  /applications/{application_id}/secret:
     put:
       summary: Save application secret
       description: Create or update the applciation's secret
-      operationId: "kio.core/saveApplicationSecret"
+      operationId: "kio.core/save-application-secret"
       tags:
         - Applications
+      consumes:
+        - application/json
       parameters:
-        - name: applicationId
+        - name: application_id
           in: path
           type: string
           description: ID of the application
           pattern: "^[a-z][a-z0-9-]+$"
           required: true
+        - name: secret
+          in: body
+          type: string
+          description: The application's new secret
+          required: true
       responses:
         200:
           description: Secret was saved
+        404:
+          description: Not found
         default:
           description: Unexpected error
           schema:
@@ -138,7 +151,7 @@ definitions:
       name:
         type: string
         description: A human-readable name
-      teamId:
+      team_id:
         type: string
         description: ID of the team, responsible for this application
       description:
@@ -147,10 +160,10 @@ definitions:
       url:
         type: string
         description: Live URL of the application
-      scmUrl:
+      scm_url:
         type: string
         description: URL of SCM repository
-      documentationUrl:
+      documentation_url:
         type: string
         description: URL of documentation
 
@@ -160,7 +173,7 @@ definitions:
         type: string
         description: A human-readable name
         minLength: 1
-      teamId:
+      team_id:
         type: string
         description: ID of the team, responsible for this application
       description:
@@ -169,24 +182,24 @@ definitions:
       url:
         type: string
         description: Live URL of the application
-      scmUrl:
+      scm_url:
         type: string
         description: URL of SCM repository
-      documentationUrl:
+      documentation_url:
         type: string
         description: URL of documentation
     required:
       - name
-      - teamId
+      - team_id
       - description
-      - scmUrl
+      - scm_url
     example:
       name: Kio
-      teamId: stups
+      team_id: stups
       description: Registry for applications
       url: https://kio.stups.example.org
-      scmUrl: git@github.com:zalando-stups/kio.git
-      documentationUrl: https://zalando-stups.github.io
+      scm_url: git@github.com:zalando-stups/kio.git
+      documentation_url: https://zalando-stups.github.io
 
   ApplicationSummary:
     properties:
@@ -196,13 +209,13 @@ definitions:
       name:
         type: string
         description: A human-readable name
-      teamId:
+      team_id:
         type: string
         description: ID of the team, responsible for this application
     example:
       id: kio
       name: Kio
-      teamId: stups
+      team_id: stups
 
   Error:
     properties:
