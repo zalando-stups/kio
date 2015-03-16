@@ -15,45 +15,65 @@
 ;
 
 (ns kio.core
-  (:use ring.util.response)
   (:require [io.sarnowski.swagger1st.core :as s1st]
             [ring.middleware.params :refer [wrap-params]]
-            [ring.middleware.json :refer [wrap-json-response]]
-            [clojure.pprint :refer [pprint]])
+            [ring.util.response :refer :all]
+            [clojure.pprint :refer [pprint]]
+            [yesql.core :refer [defquery]])
   (:gen-class))
 
-(defn readApplications [request]
-  (pprint request)
-  (response [{:id "kio" :name "Kio" :teamId "stups"}
-             {:id "pierone" :name "Pier One" :teamId "stups"}]))
+(def db-spec {:classname   "org.postgresql.Driver"
+              :subprotocol "postgresql"
+              :subname     "//localhost:5432/local_kio_db"
+              :user        "postgres"
+              :password    "postgres"})
 
-(defn readApplication [request]
-  (pprint request)
-  (response {:id               "kio"
-             :name             "Kio"
-             :teamId           "stups"
-             :description      "The application registry"
-             :url              "https://kio.stups.example.org"
-             :scmUrl           "git@github.com:zalando-stups/kio.git"
-             :documentationUrl "http://zalando-stups.github.io"}))
+(defquery query-read-applications "sql/application-read-all.sql" {:connection db-spec})
+(defquery query-read-application "sql/application-read.sql" {:connection db-spec})
+(defquery query-save-application! "sql/application-save.sql" {:connection db-spec})
+(defquery query-delete-application! "sql/application-delete.sql" {:connection db-spec})
+(defquery query-save-application-secret! "sql/application-save-secret.sql" {:connection db-spec})
 
-(defn saveApplication [request]
-  (pprint request)
-  nil)
+(defn json-content-type [response]
+  (content-type response "application/json"))
 
-(defn deleteApplication [request]
-  (pprint request)
-  nil)
+(defn compute-status [result-set] (if (empty? result-set) (not-found {}) (response (first result-set))))
 
-(defn saveApplicationSecret [request]
-  (pprint request)
-  nil)
+(defn read-applications [request]
+  (-> (query-read-applications)
+      (response)
+      (json-content-type)))
+
+(defn read-application [request]
+  (-> (query-read-application {:id (get-in request [:parameters :path :application_id])})
+      (compute-status)
+      (json-content-type)))
+
+(defn save-application [request]
+  (let [app (get-in request [:parameters :body :application])
+        app-id (get-in request [:parameters :path :application_id])]
+    (query-save-application! (merge app {:id app-id})))
+  (response nil))
+
+(defn delete-application [request]
+  (if
+    (> (query-delete-application! {:id (get-in request [:parameters :path :application_id])}) 0)
+    (response nil)
+    (not-found nil)))
+
+(defn save-application-secret [request]
+  (if
+    (> (query-save-application-secret! {:id     (get-in request [:parameters :path :application_id])
+                                        :secret (get-in request [:parameters :body :secret])}) 0)
+    (response nil)
+    (not-found nil)))
 
 
 (def app
   (-> (s1st/swagger-executor)
+      (s1st/swagger-security)
       (s1st/swagger-validator)
       (s1st/swagger-parser)
+      (s1st/swagger-discovery)
       (s1st/swagger-mapper ::s1st/yaml-cp "api.yaml")
-      (wrap-json-response)
       (wrap-params)))
