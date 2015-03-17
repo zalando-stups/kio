@@ -15,7 +15,7 @@ paths:
       summary: Read applications
       description: |
         Lists all registered applications
-      operationId: "kio.core/read-applications"
+      operationId: "org.zalando.kio.api/read-applications"
       tags:
         - Applications
       responses:
@@ -35,7 +35,7 @@ paths:
       summary: Read application
       description: |
         Returns details about one application
-      operationId: "kio.core/read-application"
+      operationId: "org.zalando.kio.api/read-application"
       tags:
         - Applications
       parameters:
@@ -61,7 +61,7 @@ paths:
       summary: Save application
       description: |
         Creates or updates an application
-      operationId: "kio.core/save-application"
+      operationId: "org.zalando.kio.api/save-application"
       tags:
         - Applications
       consumes:
@@ -91,7 +91,7 @@ paths:
       summary: Delete application
       description: |
         Deletes an application
-      operationId: "kio.core/delete-application"
+      operationId: "org.zalando.kio.api/delete-application"
       tags:
         - Applications
       parameters:
@@ -115,7 +115,7 @@ paths:
     put:
       summary: Save application secret
       description: Create or update the applciation's secret
-      operationId: "kio.core/save-application-secret"
+      operationId: "org.zalando.kio.api/save-application-secret"
       tags:
         - Applications
       consumes:
