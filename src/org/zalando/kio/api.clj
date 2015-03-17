@@ -18,6 +18,7 @@
   (:require [ring.middleware.params :refer [wrap-params]]
             [ring.util.response :refer :all]
             [com.stuartsierra.component :as component]
+            [io.sarnowski.swagger1st.core :as s1st]
             [org.zalando.friboo.system.http :as http]
             [org.zalando.kio.sql :as sql]))
 
@@ -27,9 +28,9 @@
   (start [this]
     (assoc this :mapper-fn (fn [operationId]
                              (fn [request]
-                               (if-let [cljfn (http/flattened-parameter-mapper operationId)]
-                                 ; append the DB on every function call
-                                 (cljfn request db))))))
+                               (if-let [cljfn (s1st/map-function-name operationId)]
+                                 ; -> fn [parameters request db]
+                                 (cljfn (http/flattened-parameter-mapper request) request db))))))
 
   (stop [this]
     (assoc this :mapper-fn nil))
