@@ -55,28 +55,28 @@
     (response (first result-set))))
 
 (defn read-applications [_ _ db]
-  (-> (sql/read-applications db)
+  (-> (sql/read-applications {} {:connection db})
       (response)
       (json-content-type)))
 
 (defn read-application [{:keys [application_id]} _ db]
-  (-> (sql/read-application db {:id application_id})
+  (-> (sql/read-application {:id application_id} {:connection db})
       (compute-status)
       (json-content-type)))
 
 (defn save-application [{:keys [application application_id]} _ db]
-  (sql/save-application! db (merge application {:id application_id}))
+  (sql/save-application! (merge application {:id application_id}) {:connection db})
   (response nil))
 
 (defn delete-application [{:keys [application_id]} _ db]
   (if
-    (> (sql/delete-application! db {:id application_id}) 0)
+    (> (sql/delete-application! {:id application_id} {:connection db}) 0)
     (response nil)
     (not-found nil)))
 
 (defn save-application-secret [{:keys [application_id secret]} _ db]
   (if
-    (> (sql/save-application-secret! db {:id     application_id
-                                         :secret secret}) 0)
+    (> (sql/save-application-secret! {:id     application_id
+                                      :secret secret} {:connection db}) 0)
     (response nil)
     (not-found nil)))
