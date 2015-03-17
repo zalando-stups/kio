@@ -16,6 +16,7 @@
 
 (ns org.zalando.kio.core
   (:require [com.stuartsierra.component :refer [using]]
+            [org.zalando.friboo.config :as config]
             [org.zalando.friboo.system :as system]
             [org.zalando.friboo.system.db :refer [new-db]]
             [org.zalando.kio.api :refer [new-api]]
@@ -29,7 +30,7 @@
                                      {:http-definition "api.yaml"
                                       :http-port 8080}
                                      default-configuration)
-        configuration (system/load-configuration default-configuration)
+        configuration (config/load-configuration default-configuration)
         system (system/new-system configuration {:db  (new-db (:db configuration))
                                                  :api (using (new-api) [:db])})]
     (system/run configuration system)))
