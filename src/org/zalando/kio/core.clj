@@ -24,23 +24,17 @@
 
 (defn run
   "Initializes and starts the whole system."
-  [& configuration]
-  (let [configuration (merge
-                        ; default general configuration
-                        {:definition "api.yaml"
-                         :port       8080}
-                        ; default db configuration
-                        default-db-spec
-                        ; overwrite during runtime
-                        (system/load-configuration)
-                        ; even stronger overwrites for e.g. development
-                        configuration)]
-
-    (system/run configuration
-                {:db  (new-db configuration)
-                 :api (using (new-api) [:db])})))
+  [default-configuration]
+  (let [default-configuration (merge default-db-spec
+                                     {:http-definition "api.yaml"
+                                      :http-port 8080}
+                                     default-configuration)
+        configuration (system/load-configuration default-configuration)
+        system (system/new-system configuration {:db  (new-db (:db configuration))
+                                                 :api (using (new-api) [:db])})]
+    (system/run configuration system)))
 
 (defn -main
   "The actual main for our uberjar."
   [& args]
-  (run))
+  (run {}))

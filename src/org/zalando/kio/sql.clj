@@ -17,11 +17,11 @@
 (ns org.zalando.kio.sql
   (:require [yesql.core :refer [defquery]]))
 
-(def default-db-spec {:classname   "org.postgresql.Driver"
-                      :subprotocol "postgresql"
-                      :subname     "//localhost:5432/local_kio_db"
-                      :user        "postgres"
-                      :password    "postgres"})
+(def default-db-spec {:db-classname   "org.postgresql.Driver"
+                      :db-subprotocol "postgresql"
+                      :db-subname     "//localhost:5432/local_kio_db"
+                      :db-user        "postgres"
+                      :db-password    "postgres"})
 
 ; TODO maybe configure as map and then iterate? does yesql not provide such a thing?
 (defquery read-applications "sql/application-read-all.sql")

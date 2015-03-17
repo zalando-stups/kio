@@ -20,7 +20,7 @@
   "Starts the system running, sets the Var #'system."
   []
   (alter-var-root #'system
-                  (constantly (org.zalando.kio.core/run {:log-level "DEBUG"}))))
+                  (constantly (org.zalando.kio.core/run {:system-log-level "DEBUG"}))))
 
 (defn stop
   "Stops the system if it is currently running, updates the Var
