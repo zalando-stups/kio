@@ -15,11 +15,11 @@
 ;
 
 (ns org.zalando.kio.core
-  (:require [com.stuartsierra.component :refer [using]]
+  (:require [com.stuartsierra.component :refer [using system-map]]
             [org.zalando.friboo.config :as config]
             [org.zalando.friboo.system :as system]
-            [org.zalando.friboo.system.db :refer [new-db]]
-            [org.zalando.kio.api :refer [new-api]]
+            [org.zalando.friboo.system.db :as db]
+            [org.zalando.kio.api :as api]
             [org.zalando.kio.sql :refer [default-db-spec]])
   (:gen-class))
 
@@ -28,11 +28,16 @@
   [default-configuration]
   (let [default-configuration (merge default-db-spec
                                      {:http-definition "api.yaml"
-                                      :http-port 8080}
+                                      :http-port       8080}
                                      default-configuration)
         configuration (config/load-configuration default-configuration)
-        system (system/new-system configuration {:db  (new-db (:db configuration))
-                                                 :api (using (new-api) [:db])})]
+
+        system (system-map
+                 :db (db/map->DB {:configuration (:db configuration)})
+                 :api (using
+                        (api/map->API {:configuration (:http configuration)})
+                        [:db]))]
+
     (system/run configuration system)))
 
 (defn -main

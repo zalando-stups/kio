@@ -19,32 +19,11 @@
             [ring.util.response :refer :all]
             [com.stuartsierra.component :as component]
             [io.sarnowski.swagger1st.core :as s1st]
-            [org.zalando.friboo.system.http :as http]
+            [org.zalando.friboo.system.http :refer [def-http-component]]
             [org.zalando.kio.sql :as sql]))
 
-; create a dependency injecting function mapper component
-(defrecord API [mapper-fn db]
-  component/Lifecycle
-  (start [this]
-    (assoc this :mapper-fn (fn [operationId]
-                             (fn [request]
-                               (if-let [cljfn (s1st/map-function-name operationId)]
-                                 ; -> fn [parameters request db]
-                                 (cljfn (http/flattened-parameter-mapper request) request db))))))
-
-  (stop [this]
-    (assoc this :mapper-fn nil))
-
-  http/API
-  (get-mapper-fn [_] mapper-fn))
-
-(defn new-api
-  "Default constructor for API component."
-  []
-  (map->API {}))
-
-
-;;; API functions
+; define the API component and its dependencies
+(def-http-component API [db])
 
 (defn- json-content-type [response]
   (content-type response "application/json"))
