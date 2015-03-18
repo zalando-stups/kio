@@ -61,7 +61,7 @@ paths:
       summary: Save application
       description: |
         Creates or updates an application
-      operationId: "org.zalando.kio.api/save-application"
+      operationId: "org.zalando.kio.api/create-or-update-application"
       tags:
         - Applications
       consumes:
@@ -115,7 +115,7 @@ paths:
     put:
       summary: Save application secret
       description: Create or update the applciation's secret
-      operationId: "org.zalando.kio.api/save-application-secret"
+      operationId: "org.zalando.kio.api/update-application-secret"
       tags:
         - Applications
       consumes:

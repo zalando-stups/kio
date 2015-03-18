@@ -1,1 +1,0 @@
-DELETE FROM kio.application WHERE id = :id;

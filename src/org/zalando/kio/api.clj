@@ -15,12 +15,10 @@
 ;
 
 (ns org.zalando.kio.api
-  (:require [ring.middleware.params :refer [wrap-params]]
+  (:require [org.zalando.friboo.system.http :refer [def-http-component]]
+            [org.zalando.kio.sql :as sql]
             [ring.util.response :refer :all]
-            [com.stuartsierra.component :as component]
-            [io.sarnowski.swagger1st.core :as s1st]
-            [org.zalando.friboo.system.http :refer [def-http-component]]
-            [org.zalando.kio.sql :as sql]))
+            [org.zalando.friboo.ring :refer :all]))
 
 ; define the API component and its dependencies
 (def-http-component API "kio-api.yaml" [db])
@@ -28,37 +26,40 @@
 (def default-http-configuration
   {:http-port 8080})
 
-(defn- json-content-type [response]
-  (content-type response "application/json"))
-
-(defn- compute-status [result-set]
-  (if (empty? result-set)
-    (not-found {})
-    (response (first result-set))))
-
 (defn read-applications [_ _ db]
   (-> (sql/read-applications {} {:connection db})
       (response)
-      (json-content-type)))
+      (content-type-json)))
 
 (defn read-application [{:keys [application_id]} _ db]
-  (-> (sql/read-application {:id application_id} {:connection db})
-      (compute-status)
-      (json-content-type)))
+  (-> (sql/read-application
+        {:id application_id}
+        {:connection db})
+      (single-response)
+      (content-type-json)))
 
-(defn save-application [{:keys [application application_id]} _ db]
-  (sql/save-application! (merge application {:id application_id}) {:connection db})
+(defn create-or-update-application [{:keys [application application_id]} _ db]
+  (sql/create-or-update-application!
+    (merge application {:id application_id})
+    {:connection db})
   (response nil))
 
-(defn delete-application [{:keys [application_id]} _ db]
-  (if
-    (> (sql/delete-application! {:id application_id} {:connection db}) 0)
-    (response nil)
-    (not-found nil)))
+(defn update-application-secret [{:keys [application_id secret]} _ db]
+  (let [stored (> (sql/update-application-secret!
+                    {:id     application_id
+                     :secret secret}
+                    {:connection db})
+                  0)]
+    (if stored
+      (response nil)
+      (not-found nil))))
 
-(defn save-application-secret [{:keys [application_id secret]} _ db]
-  (if
-    (> (sql/save-application-secret! {:id     application_id
-                                      :secret secret} {:connection db}) 0)
-    (response nil)
-    (not-found nil)))
+; TODO this should not be supported?! only 'inactive' flag maybe?
+(defn delete-application [{:keys [application_id]} _ db]
+  (let [deleted (> (sql/delete-application!
+                     {:id application_id}
+                     {:connection db})
+                   0)]
+    (if deleted
+      (response nil)
+      (not-found nil))))

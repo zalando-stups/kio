@@ -13,6 +13,7 @@
                            [org.postgresql/postgresql "9.3-1102-jdbc41"]]
 
             :main ^:skip-aot org.zalando.kio.core
+            :uberjar-name "kio.jar"
 
             :profiles {:uberjar {:aot :all}
 

@@ -15,7 +15,7 @@
 ;
 
 (ns org.zalando.kio.sql
-  (:require [yesql.core :refer [defquery]]
+  (:require [yesql.core :refer [defqueries]]
             [org.zalando.friboo.system.db :refer [def-db-component]]))
 
 (def-db-component DB)
@@ -27,9 +27,4 @@
    :db-user        "postgres"
    :db-password    "postgres"})
 
-; TODO maybe configure as map and then iterate? does yesql not provide such a thing?
-(defquery read-applications "sql/application-read-all.sql")
-(defquery read-application "sql/application-read.sql")
-(defquery save-application! "sql/application-save.sql")
-(defquery delete-application! "sql/application-delete.sql")
-(defquery save-application-secret! "sql/application-save-secret.sql")
+(defqueries "applications.sql")
