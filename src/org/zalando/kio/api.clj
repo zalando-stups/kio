@@ -23,7 +23,10 @@
             [org.zalando.kio.sql :as sql]))
 
 ; define the API component and its dependencies
-(def-http-component API [db])
+(def-http-component API "kio-api.yaml" [db])
+
+(def default-http-configuration
+  {:http-port 8080})
 
 (defn- json-content-type [response]
   (content-type response "application/json"))
