@@ -18,7 +18,8 @@
   (:require [org.zalando.friboo.system.http :refer [def-http-component]]
             [org.zalando.kio.sql :as sql]
             [ring.util.response :refer :all]
-            [org.zalando.friboo.ring :refer :all]))
+            [org.zalando.friboo.ring :refer :all]
+            [clojure.tools.logging :as log]))
 
 ; define the API component and its dependencies
 (def-http-component API "kio-api.yaml" [db])
@@ -27,11 +28,13 @@
   {:http-port 8080})
 
 (defn read-applications [_ _ db]
+  (log/debug "Read all applications")
   (-> (sql/read-applications {} {:connection db})
       (response)
       (content-type-json)))
 
 (defn read-application [{:keys [application_id]} _ db]
+  (log/debug "Read application by id" application_id)
   (-> (sql/read-application
         {:id application_id}
         {:connection db})
@@ -39,12 +42,14 @@
       (content-type-json)))
 
 (defn create-or-update-application [{:keys [application application_id]} _ db]
+  (log/info "Create/update application" application_id "with data:" application)
   (sql/create-or-update-application!
     (merge application {:id application_id})
     {:connection db})
   (response nil))
 
 (defn update-application-secret [{:keys [application_id secret]} _ db]
+  (log/info "Updating the secret of application" application_id)
   (let [stored (> (sql/update-application-secret!
                     {:id     application_id
                      :secret secret}
@@ -56,6 +61,7 @@
 
 ; TODO this should not be supported?! only 'inactive' flag maybe?
 (defn delete-application [{:keys [application_id]} _ db]
+  (log/info "Delete application" application_id)
   (let [deleted (> (sql/delete-application!
                      {:id application_id}
                      {:connection db})
