@@ -50,11 +50,10 @@
 
 (defn update-application-secret [{:keys [application_id secret]} _ db]
   (log/info "Updating the secret of application" application_id)
-  (let [stored (> (sql/update-application-secret!
+  (let [stored (pos? (sql/update-application-secret!
                     {:id     application_id
                      :secret secret}
-                    {:connection db})
-                  0)]
+                    {:connection db}))]
     (if stored
       (response nil)
       (not-found nil))))
@@ -62,10 +61,9 @@
 ; TODO this should not be supported?! only 'inactive' flag maybe?
 (defn delete-application [{:keys [application_id]} _ db]
   (log/info "Delete application" application_id)
-  (let [deleted (> (sql/delete-application!
+  (let [deleted (pos? (sql/delete-application!
                      {:id application_id}
-                     {:connection db})
-                   0)]
+                     {:connection db}))]
     (if deleted
       (response nil)
       (not-found nil))))

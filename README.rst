@@ -13,7 +13,8 @@ To start a web server for the application, run:
 
 .. code-block:: bash
 
-    $ lein ring server
+    $ lein repl
+    (go)
 
 
 .. _Leiningen: http://leiningen.org/
