@@ -1,4 +1,4 @@
-(defproject kio "0.1.0-SNAPSHOT"
+(defproject org.zalando/kio "0.1.0-SNAPSHOT"
             :description "The application registry."
             :url "https://github.com/zalando-stups/kio"
 
@@ -14,6 +14,22 @@
 
             :main ^:skip-aot org.zalando.kio.core
             :uberjar-name "kio.jar"
+
+            :plugins [[io.sarnowski/lein-docker "1.0.0"]]
+
+            :docker {:image-name "stups/kio"}
+
+            :release-tasks [["vcs" "assert-committed"]
+                            ["change" "version" "leiningen.release/bump-version" "release"]
+                            ["vcs" "commit"]
+                            ["vcs" "tag"]
+                            ["clean"]
+                            ["uberjar"]
+                            ["docker" "build"]
+                            ["docker" "push"]
+                            ["change" "version" "leiningen.release/bump-version"]
+                            ["vcs" "commit"]
+                            ["vcs" "push"]]
 
             :profiles {:uberjar {:aot :all}
 
