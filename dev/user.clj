@@ -9,7 +9,7 @@
    [clojure.repl :refer [apropos dir doc find-doc pst source]]
    [clojure.tools.namespace.repl :refer [refresh refresh-all]]
    [com.stuartsierra.component :as component]
-   [org.zalando.kio.core]))
+   [org.zalando.stups.kio.core]))
 
 (def system
   "A Var containing an object representing the application under
@@ -20,7 +20,7 @@
   "Starts the system running, sets the Var #'system."
   []
   (alter-var-root #'system
-                  (constantly (org.zalando.kio.core/run {:system-log-level "DEBUG"}))))
+                  (constantly (org.zalando.stups.kio.core/run {:system-log-level "DEBUG"}))))
 
 (defn stop
   "Stops the system if it is currently running, updates the Var

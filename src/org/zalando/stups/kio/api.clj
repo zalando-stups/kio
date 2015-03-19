@@ -14,11 +14,11 @@
 ; limitations under the License.
 ;
 
-(ns org.zalando.kio.api
-  (:require [org.zalando.friboo.system.http :refer [def-http-component]]
-            [org.zalando.kio.sql :as sql]
+(ns org.zalando.stups.kio.api
+  (:require [org.zalando.stups.friboo.system.http :refer [def-http-component]]
+            [org.zalando.stups.kio.sql :as sql]
             [ring.util.response :refer :all]
-            [org.zalando.friboo.ring :refer :all]
+            [org.zalando.stups.friboo.ring :refer :all]
             [clojure.tools.logging :as log]))
 
 ; define the API component and its dependencies

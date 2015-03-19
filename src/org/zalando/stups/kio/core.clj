@@ -14,12 +14,12 @@
 ; limitations under the License.
 ;
 
-(ns org.zalando.kio.core
+(ns org.zalando.stups.kio.core
   (:require [com.stuartsierra.component :refer [using system-map]]
-            [org.zalando.friboo.config :as config]
-            [org.zalando.friboo.system :as system]
-            [org.zalando.kio.sql :as sql]
-            [org.zalando.kio.api :as api])
+            [org.zalando.stups.friboo.config :as config]
+            [org.zalando.stups.friboo.system :as system]
+            [org.zalando.stups.kio.sql :as sql]
+            [org.zalando.stups.kio.api :as api])
   (:gen-class))
 
 (defn run

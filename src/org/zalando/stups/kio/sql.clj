@@ -14,9 +14,9 @@
 ; limitations under the License.
 ;
 
-(ns org.zalando.kio.sql
+(ns org.zalando.stups.kio.sql
   (:require [yesql.core :refer [defqueries]]
-            [org.zalando.friboo.system.db :refer [def-db-component]]))
+            [org.zalando.stups.friboo.system.db :refer [def-db-component]]))
 
 (def-db-component DB)
 

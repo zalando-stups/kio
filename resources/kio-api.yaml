@@ -15,7 +15,7 @@ paths:
       summary: Read applications
       description: |
         Lists all registered applications
-      operationId: "org.zalando.kio.api/read-applications"
+      operationId: "org.zalando.stups.kio.api/read-applications"
       tags:
         - Applications
       responses:
@@ -35,7 +35,7 @@ paths:
       summary: Read application
       description: |
         Returns details about one application
-      operationId: "org.zalando.kio.api/read-application"
+      operationId: "org.zalando.stups.kio.api/read-application"
       tags:
         - Applications
       parameters:
@@ -61,7 +61,7 @@ paths:
       summary: Save application
       description: |
         Creates or updates an application
-      operationId: "org.zalando.kio.api/create-or-update-application"
+      operationId: "org.zalando.stups.kio.api/create-or-update-application"
       tags:
         - Applications
       consumes:
@@ -91,7 +91,7 @@ paths:
       summary: Delete application
       description: |
         Deletes an application
-      operationId: "org.zalando.kio.api/delete-application"
+      operationId: "org.zalando.stups.kio.api/delete-application"
       tags:
         - Applications
       parameters:
@@ -115,7 +115,7 @@ paths:
     put:
       summary: Save application secret
       description: Create or update the applciation's secret
-      operationId: "org.zalando.kio.api/update-application-secret"
+      operationId: "org.zalando.stups.kio.api/update-application-secret"
       tags:
         - Applications
       consumes:

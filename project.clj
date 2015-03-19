@@ -1,4 +1,4 @@
-(defproject org.zalando/kio "0.1.0-SNAPSHOT"
+(defproject org.zalando.stups/kio "0.1.0-SNAPSHOT"
             :description "The application registry."
             :url "https://github.com/zalando-stups/kio"
 
@@ -8,11 +8,11 @@
             :min-lein-version "2.0.0"
 
             :dependencies [[org.clojure/clojure "1.6.0"]
-                           [org.zalando/friboo "0.2.0"]
+                           [org.zalando.stups/friboo "0.4.0"]
                            [yesql "0.5.0-rc2"]
                            [org.postgresql/postgresql "9.3-1102-jdbc41"]]
 
-            :main ^:skip-aot org.zalando.kio.core
+            :main ^:skip-aot org.zalando.stups.kio.core
             :uberjar-name "kio.jar"
 
             :plugins [[io.sarnowski/lein-docker "1.0.0"]]
