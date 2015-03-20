@@ -21,13 +21,13 @@ You can run Kio by starting it with Docker:
 
 Configuration is provided via environment variables during start.
 
-| Variable         | Default                | Description |
-| ---------------- | ---------------------- | - |
-| HTTP_PORT        | `8080`                 | TCP port to provide the HTTP API. |
-| HTTP_CORS_ORIGIN |                        | Domain for cross-origin JavaScript requests. If set, the Access-Control headers will be set. |
-| DB_SUBNAME       | `//localhost:5432/kio` | JDBC connection information of your database. |
-| DB_USER          | `postgres`             | Database user. |
-| DB_PASSWORD      | `postgres`             | Database password. |
+Variable         | Default                | Description
+---------------- | ---------------------- | -----------
+HTTP_PORT        | `8080`                 | TCP port to provide the HTTP API.
+HTTP_CORS_ORIGIN |                        | Domain for cross-origin JavaScript requests. If set, the Access-Control headers will be set.
+DB_SUBNAME       | `//localhost:5432/kio` | JDBC connection information of your database.
+DB_USER          | `postgres`             | Database user.
+DB_PASSWORD      | `postgres`             | Database password.
 
 Example:
 
