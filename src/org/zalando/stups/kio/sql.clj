@@ -1,4 +1,3 @@
-;
 ; Copyright 2015 Zalando SE
 ;
 ; Licensed under the Apache License, Version 2.0 (the "License")
@@ -12,13 +11,12 @@
 ; WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 ; See the License for the specific language governing permissions and
 ; limitations under the License.
-;
 
 (ns org.zalando.stups.kio.sql
   (:require [yesql.core :refer [defqueries]]
             [org.zalando.stups.friboo.system.db :refer [def-db-component]]))
 
-(def-db-component DB)
+(def-db-component DB :auto-migration? true)
 
 (def default-db-configuration
   {:db-classname   "org.postgresql.Driver"
@@ -27,4 +25,4 @@
    :db-user        "postgres"
    :db-password    "postgres"})
 
-(defqueries "applications.sql")
+(defqueries "db/applications.sql")

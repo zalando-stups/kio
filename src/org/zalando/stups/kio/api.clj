@@ -1,4 +1,3 @@
-;
 ; Copyright 2015 Zalando SE
 ;
 ; Licensed under the Apache License, Version 2.0 (the "License")
@@ -12,7 +11,6 @@
 ; WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 ; See the License for the specific language governing permissions and
 ; limitations under the License.
-;
 
 (ns org.zalando.stups.kio.api
   (:require [org.zalando.stups.friboo.system.http :refer [def-http-component]]
@@ -22,7 +20,7 @@
             [clojure.tools.logging :as log]))
 
 ; define the API component and its dependencies
-(def-http-component API "kio-api.yaml" [db])
+(def-http-component API "api/kio-api.yaml" [db])
 
 (def default-http-configuration
   {:http-port 8080})

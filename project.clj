@@ -8,15 +8,14 @@
             :min-lein-version "2.0.0"
 
             :dependencies [[org.clojure/clojure "1.6.0"]
-                           [org.zalando.stups/friboo "0.4.0"]
+                           [org.zalando.stups/friboo "0.5.0-SNAPSHOT"]
                            [yesql "0.5.0-rc2"]
                            [org.postgresql/postgresql "9.3-1102-jdbc41"]]
 
             :main ^:skip-aot org.zalando.stups.kio.core
             :uberjar-name "kio.jar"
 
-            :plugins [[io.sarnowski/lein-docker "1.0.0"]
-                      [lein-kibit "0.0.8"]]
+            :plugins [[io.sarnowski/lein-docker "1.0.0"]]
 
             :docker {:image-name "stups/kio"}
 
