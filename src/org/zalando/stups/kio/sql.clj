@@ -21,7 +21,7 @@
 (def default-db-configuration
   {:db-classname   "org.postgresql.Driver"
    :db-subprotocol "postgresql"
-   :db-subname     "//localhost:5432/local_kio_db"
+   :db-subname     "//localhost:5432/kio"
    :db-user        "postgres"
    :db-password    "postgres"})
 
