@@ -38,7 +38,7 @@ $ docker run -it \
     -e DB_PASSWORD=kio123 \
     stups/kio
 ```
-:
+
 ## Building
 
     $ lein uberjar
