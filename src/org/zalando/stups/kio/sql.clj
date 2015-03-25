@@ -26,3 +26,5 @@
    :db-password    "postgres"})
 
 (defqueries "db/applications.sql")
+(defqueries "db/versions.sql")
+(defqueries "db/approvals.sql")

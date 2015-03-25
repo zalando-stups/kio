@@ -17,7 +17,7 @@
             [org.zalando.stups.kio.sql :as sql]
             [ring.util.response :refer :all]
             [org.zalando.stups.friboo.ring :refer :all]
-            [clojure.tools.logging :as log]))
+            [org.zalando.stups.friboo.log :as log]))
 
 ; define the API component and its dependencies
 (def-http-component API "api/kio-api.yaml" [db])
@@ -25,43 +25,72 @@
 (def default-http-configuration
   {:http-port 8080})
 
+;; applications
+
 (defn read-applications [_ _ db]
-  (log/debug "Read all applications")
+  (log/debug "Read all applications.")
   (-> (sql/read-applications {} {:connection db})
       (response)
       (content-type-json)))
 
 (defn read-application [{:keys [application_id]} _ db]
-  (log/debug "Read application by id" application_id)
+  (log/debug "Read application %s." application_id)
   (-> (sql/read-application
         {:id application_id}
         {:connection db})
       (single-response)
       (content-type-json)))
 
-(defn create-or-update-application [{:keys [application application_id]} _ db]
-  (log/info "Create/update application" application_id "with data:" application)
+(defn create-or-update-application! [{:keys [application application_id]} _ db]
+  (log/audit "Create/update application %s using data %s." application_id application)
   (sql/create-or-update-application!
     (merge application {:id application_id})
     {:connection db})
   (response nil))
 
-(defn update-application-secret [{:keys [application_id secret]} _ db]
-  (log/info "Updating the secret of application" application_id)
-  (let [stored (pos? (sql/update-application-secret!
-                    {:id     application_id
-                     :secret secret}
-                    {:connection db}))]
-    (if stored
-      (response nil)
-      (not-found nil))))
+;; versions
 
-; TODO this should not be supported?! only 'inactive' flag maybe?
-(defn delete-application [{:keys [application_id]} _ db]
-  (log/info "Delete application" application_id)
-  (let [deleted (pos? (sql/delete-application!
-                     {:id application_id}
-                     {:connection db}))]
-    (if deleted
-      (response nil)
-      (not-found nil))))
+(defn read-versions-by-application [{:keys [application_id]} _ db]
+  (log/debug "Read all versions for application %s." application_id)
+  (-> (sql/read-versions-by-application
+        {:application_id application_id}
+        {:connection db})
+      (response)
+      (content-type-json)))
+
+(defn read-version-by-application [{:keys [application_id version_id]} _ db]
+  (log/debug "Read version %s of application %s." version_id application_id)
+  (-> (sql/read-version-by-application
+        {:id             version_id
+         :application_id application_id}
+        {:connection db})
+      (single-response)
+      (content-type-json)))
+
+(defn create-or-update-version! [{:keys [application_id version_id version]} _ db]
+  (log/audit "Create/update version %s for application %s using data %s." version_id application_id version)
+  (sql/create-or-update-version!
+    (merge version {:id             version_id
+                    :application_id application_id})
+    {:connection db})
+  (response nil))
+
+;; approvals
+
+(defn read-approvals-for-version [{:keys [application_id version_id]} _ db]
+  (log/debug "Read approvals for version %s of application %s." version_id application_id)
+  (-> (sql/read-approvals-by-version
+        {:version_id     version_id
+         :application_id application_id}
+        {:connection db})
+      (content-type-json)))
+
+(defn approve-version! [{:keys [application_id version_id approval]} _ db]
+  (log/audit "Approving version %s for application %s." version_id application_id)
+  (sql/approve-version!
+    (merge approval {:version_id     version_id
+                     :application_id application_id
+                     ; TODO set correct username from authn
+                     :user_id        "TODO-FIXME"})
+    {:connection db})
+  (response nil))

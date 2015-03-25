@@ -17,7 +17,8 @@
             [org.zalando.stups.friboo.config :as config]
             [org.zalando.stups.friboo.system :as system]
             [org.zalando.stups.kio.sql :as sql]
-            [org.zalando.stups.kio.api :as api])
+            [org.zalando.stups.kio.api :as api]
+            [org.zalando.stups.friboo.log :as log])
   (:gen-class))
 
 (defn run
@@ -40,4 +41,8 @@
 (defn -main
   "The actual main for our uberjar."
   [& args]
-  (run {}))
+  (try
+    (run {})
+    (catch Exception e
+      (log/error e "Could not start system because of %s." (str e))
+      (System/exit 1))))

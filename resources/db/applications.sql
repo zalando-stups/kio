@@ -1,33 +1,26 @@
 -- name: read-applications
-SELECT id, name, team_id
+SELECT id, team_id, active, name, service_url
   FROM application;
 
 --name: read-application
-SELECT id, name, team_id, description, url, scm_url, documentation_url
+SELECT id, team_id, active, name, subtitle, description, service_url, scm_url, documentation_url
   FROM application
  WHERE id = :id;
 
 -- name: create-or-update-application!
 WITH application_update AS (
      UPDATE application
-        SET name              = :name,
-            team_id           = :team_id,
+        SET team_id           = :team_id,
+            active            = :active,
+            name              = :name,
+            subtitle          = :subtitle,
             description       = :description,
-            url               = :url,
+            service_url       = :service_url,
             scm_url           = :scm_url,
             documentation_url = :documentation_url
       WHERE id = :id
   RETURNING *)
 INSERT INTO application
-            (id, name, team_id, description, url, scm_url, documentation_url)
-     SELECT :id, :name, :team_id, :description, :url, :scm_url, :documentation_url
+            (id, team_id, active, name, subtitle, description, service_url, scm_url, documentation_url)
+     SELECT :id, :team_id, :active, :name, :subtitle, :description, :service_url, :scm_url, :documentation_url
       WHERE NOT EXISTS (SELECT * FROM application_update);
-
--- name: update-application-secret!
-UPDATE application
-   SET secret = :secret
- WHERE id = :id;
-
--- name: delete-application!
-DELETE FROM application
-      WHERE id = :id;
