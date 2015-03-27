@@ -59,7 +59,7 @@ paths:
         200:
           description: Details of one application
           schema:
-            $ref: '#/definitions/ApplicationDetailRead'
+            $ref: '#/definitions/ApplicationDetailsRead'
         404:
           description: Not found
         default:
@@ -134,7 +134,7 @@ paths:
         200:
           description: Returns detailed information
           schema:
-            $ref: '#/definitions/VersionDetailRead'
+            $ref: '#/definitions/VersionDetailsRead'
         404:
           description: Not found
         default:
@@ -363,7 +363,7 @@ definitions:
       application_id: kio
       artifact: docker://stups/kio:1.0
 
-  VersionDetailRead:
+  VersionDetailsRead:
     properties:
       id:
         type: string
