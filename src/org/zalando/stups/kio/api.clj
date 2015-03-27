@@ -42,10 +42,10 @@
       (content-type-json)))
 
 (defn create-or-update-application! [{:keys [application application_id]} _ db]
-  (log/audit "Create/update application %s using data %s." application_id application)
   (sql/create-or-update-application!
     (merge application {:id application_id})
     {:connection db})
+  (log/audit "Created/updated application %s using data %s." application_id application)
   (response nil))
 
 ;; versions
@@ -68,29 +68,30 @@
       (content-type-json)))
 
 (defn create-or-update-version! [{:keys [application_id version_id version]} _ db]
-  (log/audit "Create/update version %s for application %s using data %s." version_id application_id version)
   (sql/create-or-update-version!
     (merge version {:id             version_id
                     :application_id application_id})
     {:connection db})
+  (log/audit "Created/updated version %s for application %s using data %s." version_id application_id version)
   (response nil))
 
 ;; approvals
 
-(defn read-approvals-for-version [{:keys [application_id version_id]} _ db]
+(defn read-approvals-by-version [{:keys [application_id version_id]} _ db]
   (log/debug "Read approvals for version %s of application %s." version_id application_id)
   (-> (sql/read-approvals-by-version
         {:version_id     version_id
          :application_id application_id}
         {:connection db})
+      (response)
       (content-type-json)))
 
 (defn approve-version! [{:keys [application_id version_id approval]} _ db]
-  (log/audit "Approving version %s for application %s." version_id application_id)
   (sql/approve-version!
     (merge approval {:version_id     version_id
                      :application_id application_id
                      ; TODO set correct username from authn
                      :user_id        "TODO-FIXME"})
     {:connection db})
+  (log/audit "Approved version %s for application %s." version_id application_id)
   (response nil))
