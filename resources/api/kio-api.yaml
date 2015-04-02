@@ -32,6 +32,12 @@ paths:
       security:
       - oauth2:
         - userinfo
+      parameters:
+        - name: search
+          in: query
+          description: "Search term for application filtering."
+          type: string
+          required: false
       responses:
         200:
           description: List of all applications
@@ -255,10 +261,30 @@ definitions:
       name:
         type: string
         description: A human-readable name of the application
+      subtitle:
+        type: string
+        description: Subtitle of the application
+      service_url:
+        type: string
+        description: URL of the service
+      matched_rank:
+        type: float
+        description: Search result rank for ordering
+      matched_description:
+        type: string
+        description: Text fragments of the search result
+    required:
+      - id
+      - team_id
+      - name
+      - subtitle
+      - service_url
     example:
       id: kio
       team_id: stups
       name: Kio
+      subtitle: Application Registry
+      service_url: https://kio.example.com/
 
   ApplicationDetailsRead:
     properties:

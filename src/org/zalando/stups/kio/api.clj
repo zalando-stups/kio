@@ -27,11 +27,18 @@
 
 ;; applications
 
-(defn read-applications [_ _ db]
-  (log/debug "Read all applications.")
-  (-> (sql/read-applications {} {:connection db})
-      (response)
-      (content-type-json)))
+(defn read-applications [{:keys [search]} _ db]
+  (if (nil? search)
+    (do
+      (log/debug "Read all applications.")
+      (-> (sql/read-applications {} {:connection db})
+          (response)
+          (content-type-json)))
+    (do
+      (log/debug "Search in applications with term %s." search)
+      (-> (sql/search-applications {:searchquery search} {:connection db})
+          (response)
+          (content-type-json)))))
 
 (defn read-application [{:keys [application_id]} _ db]
   (log/debug "Read application %s." application_id)
