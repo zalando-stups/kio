@@ -15,7 +15,7 @@
   :main ^:skip-aot org.zalando.stups.kio.core
   :uberjar-name "kio.jar"
 
-  :plugins [[io.sarnowski/lein-docker "1.0.0"]]
+  :plugins [[io.sarnowski/lein-docker "1.1.0"]]
 
   :docker {:image-name "stups/kio"}
 
