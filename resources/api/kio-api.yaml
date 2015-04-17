@@ -29,9 +29,6 @@ paths:
       tags:
         - Applications
       operationId: 'org.zalando.stups.kio.api/read-applications'
-      security:
-      - oauth2:
-        - userinfo
       parameters:
         - name: search
           in: query
@@ -56,9 +53,6 @@ paths:
       tags:
       - Applications
       operationId: 'org.zalando.stups.kio.api/read-application'
-      security:
-      - oauth2:
-        - userinfo
       parameters:
       - $ref: '#/parameters/ApplicationID'
       responses:
@@ -78,9 +72,6 @@ paths:
       tags:
       - Applications
       operationId: "org.zalando.stups.kio.api/create-or-update-application!"
-      security:
-      - oauth2:
-        - application/write
       parameters:
       - $ref: '#/parameters/ApplicationID'
       - name: application
@@ -105,9 +96,6 @@ paths:
       tags:
         - Versions
       operationId: 'org.zalando.stups.kio.api/read-versions-by-application'
-      security:
-      - oauth2:
-        - userinfo
       parameters:
       - $ref: '#/parameters/ApplicationID'
       responses:
@@ -130,9 +118,6 @@ paths:
       tags:
         - Versions
       operationId: 'org.zalando.stups.kio.api/read-version-by-application'
-      security:
-      - oauth2:
-        - userinfo
       parameters:
       - $ref: '#/parameters/ApplicationID'
       - $ref: '#/parameters/VersionID'
@@ -153,9 +138,6 @@ paths:
       tags:
       - Versions
       operationId: "org.zalando.stups.kio.api/create-or-update-version!"
-      security:
-      - oauth2:
-        - application/write
       parameters:
       - $ref: '#/parameters/ApplicationID'
       - $ref: '#/parameters/VersionID'
@@ -181,9 +163,6 @@ paths:
       tags:
         - Approvals
       operationId: 'org.zalando.stups.kio.api/read-approvals-by-version'
-      security:
-      - oauth2:
-        - userinfo
       parameters:
       - $ref: '#/parameters/ApplicationID'
       - $ref: '#/parameters/VersionID'
@@ -206,9 +185,6 @@ paths:
       tags:
       - Approvals
       operationId: "org.zalando.stups.kio.api/approve-version!"
-      security:
-      - oauth2:
-        - application/write
       parameters:
       - $ref: '#/parameters/ApplicationID'
       - $ref: '#/parameters/VersionID'
@@ -472,11 +448,3 @@ definitions:
         type: string
     example:
       message: Internal Server Error
-
-securityDefinitions:
-  oauth2:
-    type: oauth2
-    description: OAuth 2.0 access control.
-    scopes:
-      userinfo: Grants everyone read access to all applications.
-      application/write: Grants write access to a team's applications.
