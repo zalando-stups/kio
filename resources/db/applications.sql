@@ -49,3 +49,9 @@ INSERT INTO application
             (id, team_id, active, name, subtitle, description, service_url, scm_url, documentation_url)
      SELECT :id, :team_id, :active, :name, :subtitle, :description, :service_url, :scm_url, :documentation_url
       WHERE NOT EXISTS (SELECT * FROM application_update);
+
+-- name: read-application-approvals
+SELECT approval_type
+  FROM approval
+ WHERE application_id = :application_id
+ GROUP BY approval_type;

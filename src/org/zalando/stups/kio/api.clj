@@ -55,6 +55,15 @@
   (log/audit "Created/updated application %s using data %s." application_id application)
   (response nil))
 
+(defn read-application-approvals [{:keys [application_id]} _ db]
+  (log/debug "Read all approvals for application %s." application_id)
+  (->> (sql/read-application-approvals
+         {:application_id application_id}
+         {:connection db})
+       (map #(:approval_type %))
+       (response)
+       (content-type-json)))
+
 ;; versions
 
 (defn read-versions-by-application [{:keys [application_id]} _ db]

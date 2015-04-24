@@ -86,6 +86,29 @@ paths:
         default:
           $ref: '#/responses/Error'
 
+  # approval types
+  '/apps/{application_id}/approvals':
+    get:
+      summary: list used approval types
+      description: |
+        Returns all used approval types for an application.
+      tags:
+        - Applications
+      operationId: 'org.zalando.stups.kio.api/read-application-approvals'
+      parameters:
+      - $ref: '#/parameters/ApplicationID'
+      responses:
+        200:
+          description: List of approvals
+          schema:
+            type: array
+            items:
+              type: string
+        404:
+          description: Not found
+        default:
+          $ref: '#/responses/Error'
+
   # versions
 
   '/apps/{application_id}/versions':
