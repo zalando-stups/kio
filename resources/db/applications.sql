@@ -28,7 +28,7 @@ WHERE query @@ vector
 ORDER BY matched_rank DESC;
 
 --name: read-application
-SELECT id, team_id, active, name, subtitle, description, service_url, scm_url, documentation_url
+SELECT id, team_id, active, name, subtitle, description, service_url, scm_url, documentation_url, specification_url
   FROM application
  WHERE id = :id;
 
@@ -42,12 +42,13 @@ WITH application_update AS (
             description       = :description,
             service_url       = :service_url,
             scm_url           = :scm_url,
-            documentation_url = :documentation_url
+            documentation_url = :documentation_url,
+            specification_url = :specification_url
       WHERE id = :id
   RETURNING *)
 INSERT INTO application
-            (id, team_id, active, name, subtitle, description, service_url, scm_url, documentation_url)
-     SELECT :id, :team_id, :active, :name, :subtitle, :description, :service_url, :scm_url, :documentation_url
+            (id, team_id, active, name, subtitle, description, service_url, scm_url, documentation_url, specification_url)
+     SELECT :id, :team_id, :active, :name, :subtitle, :description, :service_url, :scm_url, :documentation_url, :specification_url
       WHERE NOT EXISTS (SELECT * FROM application_update);
 
 -- name: read-application-approvals

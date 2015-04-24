@@ -314,6 +314,9 @@ definitions:
       documentation_url:
         type: string
         description: URL of documentation
+      specification_url:
+        type: string
+        description: URL of the specification tool
     example:
       id: kio
       team_id: stups
@@ -324,6 +327,7 @@ definitions:
       service_url: https://kio.example.com/
       scm_url: https://github.com/zalando-stups/kio.git
       documentation_url: https://github.com/zalando-stups/kio
+      specification_url: https://github.com/zalando-stups/kio/issues
 
   ApplicationWrite:
     properties:
@@ -353,15 +357,15 @@ definitions:
       documentation_url:
         type: string
         description: URL of documentation
+      specification_url:
+        type: string
+        description: URL of the specification tool
     required:
     - team_id
     - active
     - name
     - subtitle
     - description
-    - service_url
-    - scm_url
-    - documentation_url
     example:
       team_id: stups
       active: true
@@ -371,7 +375,7 @@ definitions:
       service_url: https://kio.example.com/
       scm_url: https://github.com/zalando-stups/kio.git
       documentation_url: https://github.com/zalando-stups/kio
-
+      specification_url: https://github.com/zalando-stups/kio/issues
   VersionSummaryRead:
     properties:
       id:

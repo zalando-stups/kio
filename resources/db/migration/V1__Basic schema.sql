@@ -21,6 +21,8 @@ CREATE TABLE application (
   scm_url           TEXT,
 -- URL to the application's documentation if it provides one
   documentation_url TEXT,
+-- URL to the specification tool if it provides one
+  specification_url TEXT,
 
   PRIMARY KEY (id)
 );
