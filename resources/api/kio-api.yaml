@@ -448,24 +448,33 @@ definitions:
       user_id:
         type: string
         description: ID of the user who approved the version
-      created_at:
-        type: datetime
+      approved_at:
+        type: string
+        format: date-time
         description: Point in time when the version was approved
+      notes:
+        type: string
+        description: Some hints on what was approved
     example:
       application_id: kio
       version_id: 1.0
       approval_type: TESTED
       user_id: tobi
-      created_at: '2015-04-25T16:25:00'
+      approved_at: '2015-04-25T16:25:00'
+      notes: I tested this kio version carefully.
 
   ApprovalWrite:
     properties:
+      notes:
+        type: string
+        description: Some hints on what was approved
       approval_type:
         type: string
         description: Kind of approval like 'TESTED' or 'REVIEWED'.
     required:
     - approval_type
     example:
+      notes: I tested this kio version carefully.
       approval_type: TESTED
 
   Error:

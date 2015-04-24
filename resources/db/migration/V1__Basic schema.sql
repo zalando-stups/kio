@@ -55,7 +55,10 @@ CREATE TABLE approval (
   approval_type  TEXT NOT NULL,
 
 -- when this was actually approved
-  approved_at     TIMESTAMP NOT NULL DEFAULT NOW(),
+  approved_at    TIMESTAMP NOT NULL DEFAULT NOW(),
+
+-- some hints
+  notes          TEXT,
 
   PRIMARY KEY (application_id, version_id, user_id, approval_type),
   FOREIGN KEY (application_id, version_id) REFERENCES version (application_id, id)
