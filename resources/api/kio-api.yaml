@@ -41,7 +41,40 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/ApplicationSummaryRead'
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: Unique identifier of the application
+                  example: kio
+                team_id:
+                  type: string
+                  description: ID of the team, responsible for this application
+                  example: stups
+                name:
+                  type: string
+                  description: A human-readable name of the application
+                  example: Kio
+                subtitle:
+                  type: string
+                  description: Subtitle of the application
+                  example: Application Registry
+                service_url:
+                  type: string
+                  description: URL of the service
+                  example: https://kio.example.com/
+                matched_rank:
+                  type: number
+                  description: Search result rank for ordering
+                matched_description:
+                  type: string
+                  description: Text fragments of the search result
+              required:
+                - id
+                - team_id
+                - name
+                - subtitle
+                - service_url
         default:
           $ref: '#/responses/Error'
 
@@ -59,7 +92,48 @@ paths:
         200:
           description: Details of one application
           schema:
-            $ref: '#/definitions/ApplicationDetailsRead'
+            type: object
+            properties:
+              id:
+                type: string
+                description: Unique identifier of the application
+                example: kio
+              team_id:
+                type: string
+                description: ID of the team, responsible for this application
+                example: stups
+              active:
+                type: boolean
+                description: If the application is active
+                example: true
+              name:
+                type: string
+                description: A human-readable name of the application
+                example: Kio
+              subtitle:
+                type: string
+                description: An additional title for the application
+                example: Application Registry
+              description:
+                type: string
+                description: Purpose of this application
+                example: Kio manages all application base information.
+              service_url:
+                type: string
+                description: URL of the application
+                example: https://kio.example.com/
+              scm_url:
+                type: string
+                description: URL of SCM repository
+                example: https://github.com/zalando-stups/kio.git
+              documentation_url:
+                type: string
+                description: URL of documentation
+                example: https://github.com/zalando-stups/kio
+              specification_url:
+                type: string
+                description: URL of the specification tool
+                example: https://github.com/zalando-stups/kio/issues
         404:
           description: Not found
         default:
@@ -78,8 +152,51 @@ paths:
         in: body
         description: Application details that will be saved.
         schema:
-          $ref: '#/definitions/ApplicationWrite'
-        required: true
+          properties:
+            team_id:
+              type: string
+              description: ID of the team, responsible for this application
+              example: stups
+            active:
+              type: boolean
+              description: if the application is active
+              example: true
+            name:
+              type: string
+              description: A human-readable name
+              minLength: 1
+              example: Kio
+            subtitle:
+              type: string
+              description: An additional title for the application
+              minLength: 1
+              example: STUPS' application registry
+            description:
+              type: string
+              description: Purpose of this application
+              example: Kio manages all application base information.
+            service_url:
+              type: string
+              description: URL of the application
+              example: https://kio.example.com/
+            scm_url:
+              type: string
+              description: URL of SCM repository
+              example: https://github.com/zalando-stups/kio.git
+            documentation_url:
+              type: string
+              description: URL of documentation
+              example: https://github.com/zalando-stups/kio
+            specification_url:
+              type: string
+              description: URL of the specification tool
+              example: https://github.com/zalando-stups/kio/issues
+          required:
+          - team_id
+          - active
+          - name
+          - subtitle
+          - description
       responses:
         200:
           description: Application was saved.
@@ -127,7 +244,20 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/VersionSummaryRead'
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: Unique identifier of the version
+                  example: "1.0"
+                application_id:
+                  type: string
+                  description: ID of the version's application
+                  example: kio
+                artifact:
+                  type: string
+                  description: Software artifact reference of this version
+                  example: docker://stups/kio:1.0
         404:
           description: Not found
         default:
@@ -148,7 +278,28 @@ paths:
         200:
           description: Returns detailed information
           schema:
-            $ref: '#/definitions/VersionDetailsRead'
+            type: object
+            properties:
+              id:
+                type: string
+                description: Unique identifier of the version
+                example: 1.0
+              application_id:
+                type: string
+                description: ID of the version's application
+                example: kio
+              artifact:
+                type: string
+                description: Software artifact reference of this version
+                example: docker://stups/kio:1.0
+              notes:
+                type: string
+                description: Release notes in Markdown format
+                example: |
+                  **Release 1.0**
+
+                  * initial commit
+                  * bugfixes
         404:
           description: Not found
         default:
@@ -168,8 +319,22 @@ paths:
         in: body
         description: Version details that will be saved.
         schema:
-          $ref: '#/definitions/VersionWrite'
-        required: true
+          type: object
+          properties:
+            artifact:
+              type: string
+              description: Software artifact reference of this version
+              example: docker://stups/kio:1.0
+            notes:
+              type: string
+              description: Release notes in Markdown format
+              example: |
+                **Release 1.0**
+
+                * initial commit
+                * bugfixes
+          required:
+          - artifact
       responses:
         200:
           description: Version was saved.
@@ -195,7 +360,34 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/ApprovalRead'
+              type: object
+              properties:
+                application_id:
+                  type: string
+                  description: ID of the application
+                  example: kio
+                version_id:
+                  type: string
+                  description: ID of the application's version
+                  example: 1.0
+                approval_type:
+                  type: string
+                  description: Kind of approval like 'TESTED' or 'REVIEWED'.
+                  example: TESTED
+                user_id:
+                  type: string
+                  description: ID of the user who approved the version
+                  example: tobi
+                approved_at:
+                  type: string
+                  format: date-time
+                  description: Point in time when the version was approved
+                  example: '2015-04-25T16:25:00.000Z'
+                notes:
+                  type: string
+                  description: Some hints on what was approved
+                  example: |
+                    I tested this kio version carefully.
         404:
           description: Not found
         default:
@@ -215,8 +407,19 @@ paths:
         in: body
         description: Approval information
         schema:
-          $ref: '#/definitions/ApprovalWrite'
-        required: true
+          type: object
+          properties:
+            approval_type:
+              type: string
+              description: Kind of approval like 'TESTED' or 'REVIEWED'.
+              example: TESTED
+            notes:
+              type: string
+              description: Some hints on what was approved
+              example: |
+                I tested this kio version carefully.
+          required:
+          - approval_type
       responses:
         200:
           description: Version was approved.
@@ -233,6 +436,7 @@ parameters:
     description: ID of the application
     required: true
     pattern: "^[a-z][a-z0-9-]*[a-z0-9]$"
+    #example: kio
 
   VersionID:
     name: version_id
@@ -241,6 +445,7 @@ parameters:
     description: ID of the version
     required: true
     pattern: "^[a-zA-Z0-9][a-zA-Z0-9.-]*[a-zA-Z0-9]$"
+    #example: "1.0"
 
 responses:
   Error:
@@ -249,238 +454,8 @@ responses:
       $ref: '#/definitions/Error'
 
 definitions:
-  ApplicationSummaryRead:
-    properties:
-      id:
-        type: string
-        description: Unique identifier of the application
-      team_id:
-        type: string
-        description: ID of the team, responsible for this application
-      name:
-        type: string
-        description: A human-readable name of the application
-      subtitle:
-        type: string
-        description: Subtitle of the application
-      service_url:
-        type: string
-        description: URL of the service
-      matched_rank:
-        type: float
-        description: Search result rank for ordering
-      matched_description:
-        type: string
-        description: Text fragments of the search result
-    required:
-      - id
-      - team_id
-      - name
-      - subtitle
-      - service_url
-    example:
-      id: kio
-      team_id: stups
-      name: Kio
-      subtitle: Application Registry
-      service_url: https://kio.example.com/
-
-  ApplicationDetailsRead:
-    properties:
-      id:
-        type: string
-        description: Unique identifier of the application
-      team_id:
-        type: string
-        description: ID of the team, responsible for this application
-      active:
-        type: boolean
-        description: If the application is active
-      name:
-        type: string
-        description: A human-readable name of the application
-      subtitle:
-        type: string
-        description: An additional title for the application
-      description:
-        type: string
-        description: Purpose of this application
-      service_url:
-        type: string
-        description: URL of the application
-      scm_url:
-        type: string
-        description: URL of SCM repository
-      documentation_url:
-        type: string
-        description: URL of documentation
-      specification_url:
-        type: string
-        description: URL of the specification tool
-    example:
-      id: kio
-      team_id: stups
-      active: true
-      name: Kio
-      subtitle: STUPS' application registry
-      description: Kio manages all application base information.
-      service_url: https://kio.example.com/
-      scm_url: https://github.com/zalando-stups/kio.git
-      documentation_url: https://github.com/zalando-stups/kio
-      specification_url: https://github.com/zalando-stups/kio/issues
-
-  ApplicationWrite:
-    properties:
-      team_id:
-        type: string
-        description: ID of the team, responsible for this application
-      active:
-        type: boolean
-        description: if the application is active
-      name:
-        type: string
-        description: A human-readable name
-        minLength: 1
-      subtitle:
-        type: string
-        description: An additional title for the application
-        minLength: 1
-      description:
-        type: string
-        description: Purpose of this application
-      service_url:
-        type: string
-        description: URL of the application
-      scm_url:
-        type: string
-        description: URL of SCM repository
-      documentation_url:
-        type: string
-        description: URL of documentation
-      specification_url:
-        type: string
-        description: URL of the specification tool
-    required:
-    - team_id
-    - active
-    - name
-    - subtitle
-    - description
-    example:
-      team_id: stups
-      active: true
-      name: Kio
-      subtitle: STUPS' application registry
-      description: Kio manages all application base information.
-      service_url: https://kio.example.com/
-      scm_url: https://github.com/zalando-stups/kio.git
-      documentation_url: https://github.com/zalando-stups/kio
-      specification_url: https://github.com/zalando-stups/kio/issues
-  VersionSummaryRead:
-    properties:
-      id:
-        type: string
-        description: Unique identifier of the version
-      application_id:
-        type: string
-        description: ID of the version's application
-      artifact:
-        type: string
-        description: Software artifact reference of this version
-    example:
-      id: 1.0
-      application_id: kio
-      artifact: docker://stups/kio:1.0
-
-  VersionDetailsRead:
-    properties:
-      id:
-        type: string
-        description: Unique identifier of the version
-      application_id:
-        type: string
-        description: ID of the version's application
-      artifact:
-        type: string
-        description: Software artifact reference of this version
-      notes:
-        type: string
-        description: Release notes in Markdown format
-    example:
-      id: 1.0
-      application_id: kio
-      artifact: docker://stups/kio:1.0
-      notes: |
-        **Release 1.0**
-
-        * initial commit
-        * bugfixes
-
-  VersionWrite:
-    properties:
-      artifact:
-        type: string
-        description: Software artifact reference of this version
-      notes:
-        type: string
-        description: Release notes in Markdown format
-    required:
-    - artifact
-    example:
-      artifact: docker://stups/kio:1.0
-      notes: |
-        **Release 1.0**
-
-        * initial commit
-        * bugfixes
-
-  ApprovalRead:
-    properties:
-      application_id:
-        type: string
-        description: ID of the application
-      version_id:
-        type: string
-        description: ID of the application's version
-      approval_type:
-        type: string
-        description: Kind of approval like 'TESTED' or 'REVIEWED'.
-      user_id:
-        type: string
-        description: ID of the user who approved the version
-      approved_at:
-        type: string
-        format: date-time
-        description: Point in time when the version was approved
-      notes:
-        type: string
-        description: Some hints on what was approved
-    example:
-      application_id: kio
-      version_id: 1.0
-      approval_type: TESTED
-      user_id: tobi
-      approved_at: '2015-04-25T16:25:00'
-      notes: I tested this kio version carefully.
-
-  ApprovalWrite:
-    properties:
-      notes:
-        type: string
-        description: Some hints on what was approved
-      approval_type:
-        type: string
-        description: Kind of approval like 'TESTED' or 'REVIEWED'.
-    required:
-    - approval_type
-    example:
-      notes: I tested this kio version carefully.
-      approval_type: TESTED
-
   Error:
     type: object
     properties:
       message:
         type: string
-    example:
-      message: Internal Server Error
