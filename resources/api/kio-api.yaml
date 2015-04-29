@@ -152,51 +152,7 @@ paths:
         in: body
         description: Application details that will be saved.
         schema:
-          properties:
-            team_id:
-              type: string
-              description: ID of the team, responsible for this application
-              example: stups
-            active:
-              type: boolean
-              description: if the application is active
-              example: true
-            name:
-              type: string
-              description: A human-readable name
-              minLength: 1
-              example: Kio
-            subtitle:
-              type: string
-              description: An additional title for the application
-              minLength: 1
-              example: STUPS' application registry
-            description:
-              type: string
-              description: Purpose of this application
-              example: Kio manages all application base information.
-            service_url:
-              type: string
-              description: URL of the application
-              example: https://kio.example.com/
-            scm_url:
-              type: string
-              description: URL of SCM repository
-              example: https://github.com/zalando-stups/kio.git
-            documentation_url:
-              type: string
-              description: URL of documentation
-              example: https://github.com/zalando-stups/kio
-            specification_url:
-              type: string
-              description: URL of the specification tool
-              example: https://github.com/zalando-stups/kio/issues
-          required:
-          - team_id
-          - active
-          - name
-          - subtitle
-          - description
+          '$ref': '#/definitions/StoreApplication'
       responses:
         200:
           description: Application was saved.
@@ -319,22 +275,7 @@ paths:
         in: body
         description: Version details that will be saved.
         schema:
-          type: object
-          properties:
-            artifact:
-              type: string
-              description: Software artifact reference of this version
-              example: docker://stups/kio:1.0
-            notes:
-              type: string
-              description: Release notes in Markdown format
-              example: |
-                **Release 1.0**
-
-                * initial commit
-                * bugfixes
-          required:
-          - artifact
+          '$ref': '#/definitions/StoreVersion'
       responses:
         200:
           description: Version was saved.
@@ -407,19 +348,7 @@ paths:
         in: body
         description: Approval information
         schema:
-          type: object
-          properties:
-            approval_type:
-              type: string
-              description: Kind of approval like 'TESTED' or 'REVIEWED'.
-              example: TESTED
-            notes:
-              type: string
-              description: Some hints on what was approved
-              example: |
-                I tested this kio version carefully.
-          required:
-          - approval_type
+          '$ref': '#/definitions/StoreApproval'
       responses:
         200:
           description: Version was approved.
@@ -459,3 +388,84 @@ definitions:
     properties:
       message:
         type: string
+
+  StoreApplication:
+    type: object
+    properties:
+      team_id:
+        type: string
+        description: ID of the team, responsible for this application
+        example: stups
+      active:
+        type: boolean
+        description: if the application is active
+        example: true
+      name:
+        type: string
+        description: A human-readable name
+        minLength: 1
+        example: Kio
+      subtitle:
+        type: string
+        description: An additional title for the application
+        minLength: 1
+        example: STUPS' application registry
+      description:
+        type: string
+        description: Purpose of this application
+        example: Kio manages all application base information.
+      service_url:
+        type: string
+        description: URL of the application
+        example: https://kio.example.com/
+      scm_url:
+        type: string
+        description: URL of SCM repository
+        example: https://github.com/zalando-stups/kio.git
+      documentation_url:
+        type: string
+        description: URL of documentation
+        example: https://github.com/zalando-stups/kio
+      specification_url:
+        type: string
+        description: URL of the specification tool
+        example: https://github.com/zalando-stups/kio/issues
+    required:
+    - team_id
+    - active
+    - name
+    - subtitle
+    - description
+
+  StoreVersion:
+    type: object
+    properties:
+      artifact:
+        type: string
+        description: Software artifact reference of this version
+        example: docker://stups/kio:1.0
+      notes:
+        type: string
+        description: Release notes in Markdown format
+        example: |
+          **Release 1.0**
+
+          * initial commit
+          * bugfixes
+    required:
+    - artifact
+
+  StoreApproval:
+    type: object
+    properties:
+      approval_type:
+        type: string
+        description: Kind of approval like 'TESTED' or 'REVIEWED'.
+        example: TESTED
+      notes:
+        type: string
+        description: Some hints on what was approved
+        example: |
+          I tested this kio version carefully.
+    required:
+    - approval_type
