@@ -17,6 +17,9 @@ produces:
 consumes:
 - application/json
 
+security:
+  - oauth2: [uid]
+
 paths:
 
   # applications
@@ -469,3 +472,11 @@ definitions:
           I tested this kio version carefully.
     required:
     - approval_type
+
+securityDefinitions:
+  oauth2:
+    type: oauth2
+    flow: implicit
+    authorizationUrl: https://example.com/oauth2/dialog
+    scopes:
+      uid: Unique identifier of the user accessing the service.
