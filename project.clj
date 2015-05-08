@@ -8,10 +8,7 @@
   :min-lein-version "2.0.0"
 
   :dependencies [[org.clojure/clojure "1.6.0"]
-                 [org.zalando.stups/friboo "0.9.0"]
-                 ; remove the following line as soon as
-                 ; https://github.com/sarnowski/swagger1st/issues/14 is fixed and released
-                 [io.sarnowski/swagger1st "0.11.0-SNAPSHOT"]
+                 [org.zalando.stups/friboo "0.10.0"]
 
                  [yesql "0.5.0-rc2"]
                  [org.postgresql/postgresql "9.3-1102-jdbc41"]]
