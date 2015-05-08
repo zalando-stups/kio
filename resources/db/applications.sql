@@ -1,58 +1,52 @@
 -- name: read-applications
-SELECT id, team_id, active, name, subtitle, service_url
-  FROM application;
+SELECT a_id, a_team_id, a_active, a_name, a_subtitle, a_service_url
+  FROM zk_data.application;
 
 -- name: search-applications
-SELECT id,
-  team_id,
-  active,
-  name,
-  subtitle,
-  service_url,
+SELECT a_id,
+  a_team_id,
+  a_active,
+  a_name,
+  a_subtitle,
+  a_service_url,
   ts_rank_cd(vector, query) AS matched_rank,
-  ts_headline('simple', description, query) AS matched_description
-FROM (SELECT id,
-        team_id,
-        active,
-        name,
-        subtitle,
-        service_url,
-        description,
-        setweight(to_tsvector('simple', name), 'A')
-        || setweight(to_tsvector('simple', COALESCE(subtitle, '')), 'B')
-        || setweight(to_tsvector('simple', COALESCE(description, '')), 'C')
+  ts_headline('simple', a_description, query) AS matched_description
+FROM (SELECT a_id,
+        a_team_id,
+        a_active,
+        a_name,
+        a_subtitle,
+        a_service_url,
+        a_description,
+        setweight(to_tsvector('simple', a_name), 'A')
+        || setweight(to_tsvector('simple', COALESCE(a_subtitle, '')), 'B')
+        || setweight(to_tsvector('simple', COALESCE(a_description, '')), 'C')
           as vector
-      FROM application) as apps,
+      FROM zk_data.application) as apps,
   to_tsquery('simple', :searchquery) query
 WHERE query @@ vector
 ORDER BY matched_rank DESC;
 
 --name: read-application
-SELECT id, team_id, active, name, subtitle, description, service_url, scm_url, documentation_url, specification_url
-  FROM application
- WHERE id = :id;
+SELECT a_id, a_team_id, a_active, a_name, a_subtitle, a_description, a_service_url, a_scm_url, a_documentation_url, a_specification_url
+  FROM zk_data.application
+ WHERE a_id = :id;
 
 -- name: create-or-update-application!
 WITH application_update AS (
-     UPDATE application
-        SET team_id           = :team_id,
-            active            = :active,
-            name              = :name,
-            subtitle          = :subtitle,
-            description       = :description,
-            service_url       = :service_url,
-            scm_url           = :scm_url,
-            documentation_url = :documentation_url,
-            specification_url = :specification_url
-      WHERE id = :id
+     UPDATE zk_data.application
+        SET a_team_id           = :team_id,
+            a_active            = :active,
+            a_name              = :name,
+            a_subtitle          = :subtitle,
+            a_description       = :description,
+            a_service_url       = :service_url,
+            a_scm_url           = :scm_url,
+            a_documentation_url = :documentation_url,
+            a_specification_url = :specification_url
+      WHERE a_id = :id
   RETURNING *)
-INSERT INTO application
-            (id, team_id, active, name, subtitle, description, service_url, scm_url, documentation_url, specification_url)
+INSERT INTO zk_data.application
+            (a_id, a_team_id, a_active, a_name, a_subtitle, a_description, a_service_url, a_scm_url, a_documentation_url, a_specification_url)
      SELECT :id, :team_id, :active, :name, :subtitle, :description, :service_url, :scm_url, :documentation_url, :specification_url
       WHERE NOT EXISTS (SELECT * FROM application_update);
-
--- name: read-application-approvals
-SELECT approval_type
-  FROM approval
- WHERE application_id = :application_id
- GROUP BY approval_type;
