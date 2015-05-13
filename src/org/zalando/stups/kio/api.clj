@@ -17,7 +17,9 @@
             [org.zalando.stups.kio.sql :as sql]
             [ring.util.response :refer :all]
             [org.zalando.stups.friboo.ring :refer :all]
-            [org.zalando.stups.friboo.log :as log]))
+            [org.zalando.stups.friboo.log :as log]
+            [org.zalando.stups.friboo.user :as u]
+            [io.sarnowski.swagger1st.util.api :as api]))
 
 ; define the API component and its dependencies
 (def-http-component API "api/kio-api.yaml" [db])
@@ -27,7 +29,8 @@
 
 ;; applications
 
-(defn read-applications [{:keys [search]} _ db]
+(defn read-applications [{:keys [search]} request db]
+  (u/require-teams request)
   (if (nil? search)
     (do
       (log/debug "Read all applications.")
@@ -42,7 +45,17 @@
           (response)
           (content-type-json)))))
 
-(defn read-application [{:keys [application_id]} _ db]
+(defn load-application
+  "Loads a single application by ID, used for team checks."
+  [application-id db]
+  (-> (sql/read-application
+        {:id application-id}
+        {:connection db})
+      (sql/strip-prefixes)
+      (first)))
+
+(defn read-application [{:keys [application_id]} request db]
+  (u/require-teams request)
   (log/debug "Read application %s." application_id)
   (-> (sql/read-application
         {:id application_id}
@@ -51,14 +64,17 @@
       (single-response)
       (content-type-json)))
 
-(defn create-or-update-application! [{:keys [application application_id]} _ db]
-  (sql/create-or-update-application!
-    (merge application {:id application_id})
-    {:connection db})
-  (log/audit "Created/updated application %s using data %s." application_id application)
-  (response nil))
+(defn create-or-update-application! [{:keys [application application_id]} request db]
+  (let [old-application (load-application application_id db)]
+    (u/require-team (or (:team_id old-application) (:team_id application)) request)
+    (sql/create-or-update-application!
+      (merge application {:id application_id})
+      {:connection db})
+    (log/audit "Created/updated application %s using data %s." application_id application)
+    (response nil)))
 
-(defn read-application-approvals [{:keys [application_id]} _ db]
+(defn read-application-approvals [{:keys [application_id]} request db]
+  (u/require-teams request)
   (log/debug "Read all approvals for application %s." application_id)
   (->> (sql/read-application-approvals
          {:application_id application_id}
@@ -70,7 +86,8 @@
 
 ;; versions
 
-(defn read-versions-by-application [{:keys [application_id]} _ db]
+(defn read-versions-by-application [{:keys [application_id]} request db]
+  (u/require-teams request)
   (log/debug "Read all versions for application %s." application_id)
   (-> (sql/read-versions-by-application
         {:application_id application_id}
@@ -79,7 +96,8 @@
       (response)
       (content-type-json)))
 
-(defn read-version-by-application [{:keys [application_id version_id]} _ db]
+(defn read-version-by-application [{:keys [application_id version_id]} request db]
+  (u/require-teams request)
   (log/debug "Read version %s of application %s." version_id application_id)
   (-> (sql/read-version-by-application
         {:id             version_id
@@ -89,17 +107,22 @@
       (single-response)
       (content-type-json)))
 
-(defn create-or-update-version! [{:keys [application_id version_id version]} _ db]
-  (sql/create-or-update-version!
-    (merge version {:id             version_id
-                    :application_id application_id})
-    {:connection db})
-  (log/audit "Created/updated version %s for application %s using data %s." version_id application_id version)
-  (response nil))
+(defn create-or-update-version! [{:keys [application_id version_id version]} request db]
+  (if-let [application (load-application application_id db)]
+    (do
+      (u/require-team (:team_id application) request)
+      (sql/create-or-update-version!
+        (merge version {:id             version_id
+                        :application_id application_id})
+        {:connection db})
+      (log/audit "Created/updated version %s for application %s using data %s." version_id application_id version)
+      (response nil))
+    (api/error 404 "application not found")))
 
 ;; approvals
 
-(defn read-approvals-by-version [{:keys [application_id version_id]} _ db]
+(defn read-approvals-by-version [{:keys [application_id version_id]} request db]
+  (u/require-teams request)
   (log/debug "Read approvals for version %s of application %s." version_id application_id)
   (-> (sql/read-approvals-by-version
         {:version_id     version_id
@@ -109,12 +132,15 @@
       (response)
       (content-type-json)))
 
-(defn approve-version! [{:keys [application_id version_id approval]} _ db]
-  (sql/approve-version!
-    (merge approval {:version_id     version_id
-                     :application_id application_id
-                     ; TODO set correct username from authn
-                     :user_id        "TODO-FIXME"})
-    {:connection db})
-  (log/audit "Approved version %s for application %s." version_id application_id)
-  (response nil))
+(defn approve-version! [{:keys [application_id version_id approval]} request db]
+  (if-let [application (load-application application_id db)]
+    (do
+      (u/require-team (:team_id application) request)
+      (sql/approve-version!
+        (merge approval {:version_id     version_id
+                         :application_id application_id
+                         :user_id        (get-in request [:tokeninfo :uid])})
+        {:connection db})
+      (log/audit "Approved version %s for application %s." version_id application_id)
+      (response nil))
+    (api/error 404 "application not found")))
