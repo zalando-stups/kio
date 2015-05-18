@@ -30,7 +30,7 @@
 ;; applications
 
 (defn read-applications [{:keys [search]} request db]
-  (u/require-teams request)
+  (u/require-internal-user request)
   (if (nil? search)
     (do
       (log/debug "Read all applications.")
@@ -55,7 +55,7 @@
       (first)))
 
 (defn read-application [{:keys [application_id]} request db]
-  (u/require-teams request)
+  (u/require-internal-user request)
   (log/debug "Read application %s." application_id)
   (-> (sql/read-application
         {:id application_id}
@@ -66,7 +66,7 @@
 
 (defn create-or-update-application! [{:keys [application application_id]} request db]
   (let [old-application (load-application application_id db)]
-    (u/require-team (or (:team_id old-application) (:team_id application)) request)
+    (u/require-internal-team (or (:team_id old-application) (:team_id application)) request)
     (sql/create-or-update-application!
       (merge application {:id application_id})
       {:connection db})
@@ -74,7 +74,7 @@
     (response nil)))
 
 (defn read-application-approvals [{:keys [application_id]} request db]
-  (u/require-teams request)
+  (u/require-internal-user request)
   (log/debug "Read all approvals for application %s." application_id)
   (->> (sql/read-application-approvals
          {:application_id application_id}
@@ -87,7 +87,7 @@
 ;; versions
 
 (defn read-versions-by-application [{:keys [application_id]} request db]
-  (u/require-teams request)
+  (u/require-internal-user request)
   (log/debug "Read all versions for application %s." application_id)
   (-> (sql/read-versions-by-application
         {:application_id application_id}
@@ -97,7 +97,7 @@
       (content-type-json)))
 
 (defn read-version-by-application [{:keys [application_id version_id]} request db]
-  (u/require-teams request)
+  (u/require-internal-user request)
   (log/debug "Read version %s of application %s." version_id application_id)
   (-> (sql/read-version-by-application
         {:id             version_id
@@ -110,7 +110,7 @@
 (defn create-or-update-version! [{:keys [application_id version_id version]} request db]
   (if-let [application (load-application application_id db)]
     (do
-      (u/require-team (:team_id application) request)
+      (u/require-internal-team (:team_id application) request)
       (sql/create-or-update-version!
         (merge version {:id             version_id
                         :application_id application_id})
@@ -122,7 +122,7 @@
 ;; approvals
 
 (defn read-approvals-by-version [{:keys [application_id version_id]} request db]
-  (u/require-teams request)
+  (u/require-internal-user request)
   (log/debug "Read approvals for version %s of application %s." version_id application_id)
   (-> (sql/read-approvals-by-version
         {:version_id     version_id
@@ -135,7 +135,7 @@
 (defn approve-version! [{:keys [application_id version_id approval]} request db]
   (if-let [application (load-application application_id db)]
     (do
-      (u/require-team (:team_id application) request)
+      (u/require-internal-team (:team_id application) request)
       (sql/approve-version!
         (merge approval {:version_id     version_id
                          :application_id application_id
