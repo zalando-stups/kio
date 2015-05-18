@@ -76,8 +76,6 @@ paths:
                 - id
                 - team_id
                 - name
-                - subtitle
-                - service_url
         default:
           $ref: '#/responses/Error'
 
@@ -406,12 +404,10 @@ definitions:
       name:
         type: string
         description: A human-readable name
-        minLength: 1
         example: Kio
       subtitle:
         type: string
         description: An additional title for the application
-        minLength: 1
         example: STUPS' application registry
       description:
         type: string
@@ -437,8 +433,6 @@ definitions:
     - team_id
     - active
     - name
-    - subtitle
-    - description
 
   StoreVersion:
     type: object
