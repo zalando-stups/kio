@@ -139,7 +139,7 @@
       (sql/approve-version!
         (merge approval {:version_id     version_id
                          :application_id application_id
-                         :user_id        (get-in request [:tokeninfo :uid])})
+                         :user_id        (get-in request [:tokeninfo "uid"])})
         {:connection db})
       (log/audit "Approved version %s for application %s." version_id application_id)
       (response nil))
