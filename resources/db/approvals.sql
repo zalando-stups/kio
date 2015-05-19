@@ -13,3 +13,8 @@ SELECT ap_approval_type
   FROM zk_data.approval
  WHERE ap_application_id = :application_id
  GROUP BY ap_approval_type;
+
+-- name: delete-approvals!
+DELETE FROM zk_data.approval
+      WHERE ap_application_id = :application_id
+        AND ap_version_id = :version_id;

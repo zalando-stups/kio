@@ -19,7 +19,8 @@
             [org.zalando.stups.friboo.ring :refer :all]
             [org.zalando.stups.friboo.log :as log]
             [org.zalando.stups.friboo.user :as u]
-            [io.sarnowski.swagger1st.util.api :as api]))
+            [io.sarnowski.swagger1st.util.api :as api]
+            [clojure.java.jdbc :refer [with-db-transaction]]))
 
 ; define the API component and its dependencies
 (def-http-component API "api/kio-api.yaml" [db])
@@ -111,10 +112,13 @@
   (if-let [application (load-application application_id db)]
     (do
       (u/require-internal-team (:team_id application) request)
-      (sql/create-or-update-version!
-        (merge version {:id             version_id
-                        :application_id application_id})
-        {:connection db})
+      (with-db-transaction
+        [connection db]
+        (sql/create-or-update-version!
+          (merge version {:id             version_id
+                          :application_id application_id})
+          {:connection connection})
+        (sql/delete-approvals! {:application_id application_id :version_id version_id} {:connection connection}))
       (log/audit "Created/updated version %s for application %s using data %s." version_id application_id version)
       (response nil))
     (api/error 404 "application not found")))
