@@ -66,10 +66,16 @@
       (content-type-json)))
 
 (defn create-or-update-application! [{:keys [application application_id]} request db]
-  (let [old-application (load-application application_id db)]
+  (let [old-application (load-application application_id db)
+        defaults {:specification_url nil
+                  :documentation_url nil
+                  :subtitle          nil
+                  :scm_url           nil
+                  :service_url       nil
+                  :description       nil}]
     (u/require-internal-team (or (:team_id old-application) (:team_id application)) request)
     (sql/cmd-create-or-update-application!
-      (merge application {:id application_id})
+      (merge defaults application {:id application_id})
       {:connection db})
     (log/audit "Created/updated application %s using data %s." application_id application)
     (response nil)))
@@ -114,10 +120,11 @@
       (u/require-internal-team (:team_id application) request)
       (with-db-transaction
         [connection db]
-        (sql/cmd-create-or-update-version!
-          (merge version {:id             version_id
-                          :application_id application_id})
-          {:connection connection})
+        (let [defaults {:notes nil}]
+          (sql/cmd-create-or-update-version!
+            (merge defaults version {:id             version_id
+                                     :application_id application_id})
+            {:connection connection}))
         (sql/cmd-delete-approvals! {:application_id application_id :version_id version_id} {:connection connection}))
       (log/audit "Created/updated version %s for application %s using data %s." version_id application_id version)
       (response nil))
@@ -140,11 +147,12 @@
   (if-let [application (load-application application_id db)]
     (do
       (u/require-internal-team (:team_id application) request)
-      (sql/cmd-approve-version!
-        (merge approval {:version_id     version_id
-                         :application_id application_id
-                         :user_id        (get-in request [:tokeninfo "uid"])})
-        {:connection db})
+      (let [defaults {:notes nil}]
+        (sql/cmd-approve-version!
+          (merge defaults approval {:version_id     version_id
+                                    :application_id application_id
+                                    :user_id        (get-in request [:tokeninfo "uid"])})
+          {:connection db}))
       (log/audit "Approved version %s for application %s." version_id application_id)
       (response nil))
     (api/error 404 "application not found")))
