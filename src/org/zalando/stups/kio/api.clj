@@ -36,13 +36,13 @@
     (do
       (log/debug "Read all applications.")
       (-> (sql/cmd-read-applications {} {:connection db})
-          (sql/cmd-strip-prefixes)
+          (sql/strip-prefixes)
           (response)
           (content-type-json)))
     (do
       (log/debug "Search in applications with term %s." search)
       (-> (sql/cmd-search-applications {:searchquery search} {:connection db})
-          (sql/cmd-strip-prefixes)
+          (sql/strip-prefixes)
           (response)
           (content-type-json)))))
 
@@ -52,7 +52,7 @@
   (-> (sql/cmd-read-application
         {:id application-id}
         {:connection db})
-      (sql/cmd-strip-prefixes)
+      (sql/strip-prefixes)
       (first)))
 
 (defn read-application [{:keys [application_id]} request db]
@@ -61,7 +61,7 @@
   (-> (sql/cmd-read-application
         {:id application_id}
         {:connection db})
-      (sql/cmd-strip-prefixes)
+      (sql/strip-prefixes)
       (single-response)
       (content-type-json)))
 
@@ -86,7 +86,7 @@
   (->> (sql/cmd-read-application-approvals
          {:application_id application_id}
          {:connection db})
-       (sql/cmd-strip-prefixes)
+       (sql/strip-prefixes)
        (map #(:approval_type %))
        (response)
        (content-type-json)))
@@ -99,7 +99,7 @@
   (-> (sql/cmd-read-versions-by-application
         {:application_id application_id}
         {:connection db})
-      (sql/cmd-strip-prefixes)
+      (sql/strip-prefixes)
       (response)
       (content-type-json)))
 
@@ -110,7 +110,7 @@
         {:id             version_id
          :application_id application_id}
         {:connection db})
-      (sql/cmd-strip-prefixes)
+      (sql/strip-prefixes)
       (single-response)
       (content-type-json)))
 
@@ -139,7 +139,7 @@
         {:version_id     version_id
          :application_id application_id}
         {:connection db})
-      (sql/cmd-strip-prefixes)
+      (sql/strip-prefixes)
       (response)
       (content-type-json)))
 
