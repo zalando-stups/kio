@@ -35,40 +35,40 @@
   (if (nil? search)
     (do
       (log/debug "Read all applications.")
-      (-> (sql/read-applications {} {:connection db})
-          (sql/strip-prefixes)
+      (-> (sql/cmd-read-applications {} {:connection db})
+          (sql/cmd-strip-prefixes)
           (response)
           (content-type-json)))
     (do
       (log/debug "Search in applications with term %s." search)
-      (-> (sql/search-applications {:searchquery search} {:connection db})
-          (sql/strip-prefixes)
+      (-> (sql/cmd-search-applications {:searchquery search} {:connection db})
+          (sql/cmd-strip-prefixes)
           (response)
           (content-type-json)))))
 
 (defn load-application
   "Loads a single application by ID, used for team checks."
   [application-id db]
-  (-> (sql/read-application
+  (-> (sql/cmd-read-application
         {:id application-id}
         {:connection db})
-      (sql/strip-prefixes)
+      (sql/cmd-strip-prefixes)
       (first)))
 
 (defn read-application [{:keys [application_id]} request db]
   (u/require-internal-user request)
   (log/debug "Read application %s." application_id)
-  (-> (sql/read-application
+  (-> (sql/cmd-read-application
         {:id application_id}
         {:connection db})
-      (sql/strip-prefixes)
+      (sql/cmd-strip-prefixes)
       (single-response)
       (content-type-json)))
 
 (defn create-or-update-application! [{:keys [application application_id]} request db]
   (let [old-application (load-application application_id db)]
     (u/require-internal-team (or (:team_id old-application) (:team_id application)) request)
-    (sql/create-or-update-application!
+    (sql/cmd-create-or-update-application!
       (merge application {:id application_id})
       {:connection db})
     (log/audit "Created/updated application %s using data %s." application_id application)
@@ -77,10 +77,10 @@
 (defn read-application-approvals [{:keys [application_id]} request db]
   (u/require-internal-user request)
   (log/debug "Read all approvals for application %s." application_id)
-  (->> (sql/read-application-approvals
+  (->> (sql/cmd-read-application-approvals
          {:application_id application_id}
          {:connection db})
-       (sql/strip-prefixes)
+       (sql/cmd-strip-prefixes)
        (map #(:approval_type %))
        (response)
        (content-type-json)))
@@ -90,21 +90,21 @@
 (defn read-versions-by-application [{:keys [application_id]} request db]
   (u/require-internal-user request)
   (log/debug "Read all versions for application %s." application_id)
-  (-> (sql/read-versions-by-application
+  (-> (sql/cmd-read-versions-by-application
         {:application_id application_id}
         {:connection db})
-      (sql/strip-prefixes)
+      (sql/cmd-strip-prefixes)
       (response)
       (content-type-json)))
 
 (defn read-version-by-application [{:keys [application_id version_id]} request db]
   (u/require-internal-user request)
   (log/debug "Read version %s of application %s." version_id application_id)
-  (-> (sql/read-version-by-application
+  (-> (sql/cmd-read-version-by-application
         {:id             version_id
          :application_id application_id}
         {:connection db})
-      (sql/strip-prefixes)
+      (sql/cmd-strip-prefixes)
       (single-response)
       (content-type-json)))
 
@@ -114,11 +114,11 @@
       (u/require-internal-team (:team_id application) request)
       (with-db-transaction
         [connection db]
-        (sql/create-or-update-version!
+        (sql/cmd-create-or-update-version!
           (merge version {:id             version_id
                           :application_id application_id})
           {:connection connection})
-        (sql/delete-approvals! {:application_id application_id :version_id version_id} {:connection connection}))
+        (sql/cmd-delete-approvals! {:application_id application_id :version_id version_id} {:connection connection}))
       (log/audit "Created/updated version %s for application %s using data %s." version_id application_id version)
       (response nil))
     (api/error 404 "application not found")))
@@ -128,11 +128,11 @@
 (defn read-approvals-by-version [{:keys [application_id version_id]} request db]
   (u/require-internal-user request)
   (log/debug "Read approvals for version %s of application %s." version_id application_id)
-  (-> (sql/read-approvals-by-version
+  (-> (sql/cmd-read-approvals-by-version
         {:version_id     version_id
          :application_id application_id}
         {:connection db})
-      (sql/strip-prefixes)
+      (sql/cmd-strip-prefixes)
       (response)
       (content-type-json)))
 
@@ -140,7 +140,7 @@
   (if-let [application (load-application application_id db)]
     (do
       (u/require-internal-team (:team_id application) request)
-      (sql/approve-version!
+      (sql/cmd-approve-version!
         (merge approval {:version_id     version_id
                          :application_id application_id
                          :user_id        (get-in request [:tokeninfo "uid"])})

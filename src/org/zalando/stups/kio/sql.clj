@@ -13,7 +13,7 @@
 ; limitations under the License.
 
 (ns org.zalando.stups.kio.sql
-  (:require [yesql.core :refer [defqueries]]
+  (:require [org.zalando.stups.yesql-hystrix :refer [defquerycommands]]
             [org.zalando.stups.friboo.system.db :refer [def-db-component]]))
 
 (def-db-component DB :auto-migration? true)
@@ -26,9 +26,9 @@
    :db-password    "postgres"
    :db-init-sql    "SET search_path TO zk_data, public"})
 
-(defqueries "db/applications.sql")
-(defqueries "db/versions.sql")
-(defqueries "db/approvals.sql")
+(defquerycommands "db/applications.sql")
+(defquerycommands "db/versions.sql")
+(defquerycommands "db/approvals.sql")
 
 (def column-prefix-pattern #"[a-z]+_(.+)")
 

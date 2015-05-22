@@ -8,9 +8,8 @@
   :min-lein-version "2.0.0"
 
   :dependencies [[org.clojure/clojure "1.6.0"]
-                 [org.zalando.stups/friboo "0.13.0"]
-
-                 [yesql "0.5.0-rc2"]
+                 [org.zalando.stups/friboo "0.15.0"]
+                 [org.zalando.stups/yesql-hystrix "0.1.0"]
                  [org.postgresql/postgresql "9.3-1102-jdbc41"]]
 
   :main ^:skip-aot org.zalando.stups.kio.core
