@@ -1,10 +1,10 @@
 -- name: read-versions-by-application
-SELECT v_id, v_application_id, v_artifact
+SELECT v_id, v_application_id, v_last_modified, v_artifact
   FROM zk_data.version
  WHERE v_application_id = :application_id;
 
 --name: read-version-by-application
-SELECT v_id, v_application_id, v_artifact, v_notes
+SELECT v_id, v_application_id, v_last_modified, v_artifact, v_notes
   FROM zk_data.version
  WHERE v_id = :id
    AND v_application_id = :application_id;
@@ -13,7 +13,8 @@ SELECT v_id, v_application_id, v_artifact, v_notes
 WITH version_update AS (
      UPDATE zk_data.version
         SET v_artifact           = :artifact,
-            v_notes              = :notes
+            v_notes              = :notes,
+            v_last_modified      = now()
       WHERE v_id = :id AND v_application_id = :application_id
   RETURNING *)
 INSERT INTO zk_data.version

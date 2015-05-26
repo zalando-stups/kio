@@ -211,6 +211,11 @@ paths:
                   type: string
                   description: ID of the version's application
                   example: kio
+                last_modified:
+                  type: string
+                  format: date-time
+                  description: Point in time when the version was created or last modified.
+                  example: '2015-04-25T16:25:00.000Z'
                 artifact:
                   type: string
                   description: Software artifact reference of this version
@@ -245,6 +250,11 @@ paths:
                 type: string
                 description: ID of the version's application
                 example: kio
+              last_modified:
+                type: string
+                format: date-time
+                description: Point in time when the version was created or last modified.
+                example: '2015-04-25T16:25:00.000Z'
               artifact:
                 type: string
                 description: Software artifact reference of this version
