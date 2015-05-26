@@ -14,7 +14,7 @@
 
 (ns org.zalando.stups.kio.sql
   (:require [yesql.core :refer [defqueries]]
-            [org.zalando.stups.friboo.system.db :refer [def-db-component]]))
+            [org.zalando.stups.friboo.system.db :refer [def-db-component generate-hystrix-commands]]))
 
 (def-db-component DB :auto-migration? true)
 
@@ -29,6 +29,7 @@
 (defqueries "db/applications.sql")
 (defqueries "db/versions.sql")
 (defqueries "db/approvals.sql")
+(generate-hystrix-commands)
 
 (def column-prefix-pattern #"[a-z]+_(.+)")
 
