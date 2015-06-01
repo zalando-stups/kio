@@ -8,7 +8,7 @@ info:
 
 externalDocs:
   description: STUPS overview
-  url: http://zalando-stups.github.io/
+  url: http://stups.io
 
 # technical configuration
 basePath: /
