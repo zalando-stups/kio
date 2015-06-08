@@ -1,4 +1,4 @@
-(defproject org.zalando.stups/kio "0.1.0"
+(defproject org.zalando.stups/kio "0.2.0-SNAPSHOT"
   :description "The application registry."
   :url "https://github.com/zalando-stups/kio"
 
