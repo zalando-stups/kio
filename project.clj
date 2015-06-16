@@ -16,7 +16,9 @@
   :plugins [[io.sarnowski/lein-docker "1.1.0"]
             [org.zalando.stups/lein-scm-source "0.1.0"]]
 
-  :docker {:image-name "stups/kio"}
+  :docker {:image-name #=(eval (str (some-> (System/getenv "DEFAULT_DOCKER_REGISTRY")
+                                                      (str "/"))
+                                              "stups/kio"))}
 
   :release-tasks [["vcs" "assert-committed"]
                   ["change" "version" "leiningen.release/bump-version" "release"]
