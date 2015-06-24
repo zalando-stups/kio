@@ -135,6 +135,10 @@ paths:
                 type: string
                 description: URL of the specification tool
                 example: https://github.com/zalando-stups/kio/issues
+              required_approvers:
+                type: integer
+                description: Minimum number of approvers needed for a version. Used by fullstop.
+                example: 2
         404:
           description: Not found
         default:
@@ -439,10 +443,16 @@ definitions:
         type: string
         description: URL of the specification tool
         example: https://github.com/zalando-stups/kio/issues
+      required_approvers:
+        type: integer
+        minimum: 1
+        description: Minimum number of approvers needed for a version. Used by fullstop.
+        example: 2
+        default: 2
     required:
-    - team_id
-    - active
-    - name
+      - team_id
+      - active
+      - name
 
   StoreVersion:
     type: object
