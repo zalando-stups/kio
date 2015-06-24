@@ -58,12 +58,14 @@
 (defn read-application [{:keys [application_id]} request db]
   (u/require-internal-user request)
   (log/debug "Read application %s." application_id)
-  (-> (sql/cmd-read-application
-        {:id application_id}
-        {:connection db})
-      (sql/strip-prefixes)
-      (single-response)
-      (content-type-json)))
+  (let [defaults {:required_approvers 2}]
+    (-> (sql/cmd-read-application
+          {:id application_id}
+          {:connection db})
+        (sql/strip-prefixes)
+        (map #(merge defaults %))
+        (single-response)
+        (content-type-json))))
 
 (defn create-or-update-application! [{:keys [application application_id]} request db]
   (let [old-application (load-application application_id db)
