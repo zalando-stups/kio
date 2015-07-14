@@ -38,7 +38,11 @@ SELECT a_id,
   a_scm_url,
   a_documentation_url,
   a_specification_url,
-  a_required_approvers
+  a_required_approvers,
+  a_created,
+  a_created_by,
+  a_last_modified,
+  a_last_modified_by
   FROM zk_data.application
  WHERE a_id = :id;
 
@@ -54,7 +58,9 @@ WITH application_update AS (
             a_scm_url            = :scm_url,
             a_documentation_url  = :documentation_url,
             a_specification_url  = :specification_url,
-            a_required_approvers = :required_approvers
+            a_required_approvers = :required_approvers,
+            a_last_modified      = NOW(),
+            a_last_modified_by   = :last_modified_by
       WHERE a_id = :id
   RETURNING *)
 INSERT INTO zk_data.application (
@@ -68,7 +74,9 @@ INSERT INTO zk_data.application (
             a_scm_url,
             a_documentation_url,
             a_specification_url,
-            a_required_approvers)
+            a_required_approvers,
+            a_created_by,
+            a_last_modified_by)
      SELECT :id,
             :team_id,
             :active,
@@ -79,5 +87,7 @@ INSERT INTO zk_data.application (
             :scm_url,
             :documentation_url,
             :specification_url,
-            :required_approvers
+            :required_approvers,
+            :created_by,
+            :created_by
       WHERE NOT EXISTS (SELECT * FROM application_update);
