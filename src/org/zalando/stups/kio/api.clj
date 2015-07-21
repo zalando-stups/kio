@@ -75,9 +75,7 @@
                   :service_url       nil
                   :description       nil
                   :last_modified_by  uid
-                  :created_by        (if (nil? old-application)
-                                         uid
-                                         (:created_by old-application))
+                  :created_by        (or (:created_by old-application) uid)
                   :required_approvers 2}]
     (u/require-internal-team (or (:team_id old-application) (:team_id application)) request)
     (sql/cmd-create-or-update-application!
@@ -138,9 +136,7 @@
         (let [old-version (load-version application_id version_id db)
               uid (get-in request [:tokeninfo "uid"])
               defaults {:notes            nil
-                        :created_by       (if (nil? old-version)
-                                              uid
-                                              (:created_by old-version))
+                        :created_by       (or (:created_by old-version) uid)
                         :last_modified_by uid}]
           (sql/cmd-create-or-update-version!
             (merge defaults version {:id               version_id
