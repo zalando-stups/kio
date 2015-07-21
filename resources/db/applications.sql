@@ -60,7 +60,9 @@ WITH application_update AS (
             a_specification_url  = :specification_url,
             a_required_approvers = :required_approvers,
             a_last_modified      = NOW(),
-            a_last_modified_by   = :last_modified_by
+            a_last_modified_by   = :last_modified_by,
+            a_created            = NOW(),
+            a_created_by         = :created_by
       WHERE a_id = :id
   RETURNING *)
 INSERT INTO zk_data.application (
@@ -89,5 +91,5 @@ INSERT INTO zk_data.application (
             :specification_url,
             :required_approvers,
             :created_by,
-            :created_by
+            :last_modified_by
       WHERE NOT EXISTS (SELECT * FROM application_update);

@@ -39,5 +39,5 @@ INSERT INTO zk_data.version (
             :artifact,
             :notes,
             :created_by,
-            :created_by
+            :last_modified_by
       WHERE NOT EXISTS (SELECT * FROM version_update);
