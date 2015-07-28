@@ -61,7 +61,6 @@ WITH application_update AS (
             a_required_approvers = :required_approvers,
             a_last_modified      = NOW(),
             a_last_modified_by   = :last_modified_by,
-            a_created            = NOW(),
             a_created_by         = :created_by
       WHERE a_id = :id
   RETURNING *)
