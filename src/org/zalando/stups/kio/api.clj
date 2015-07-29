@@ -76,8 +76,8 @@
                   :specification_type nil
                   :required_approvers 2
                   :last_modified_by   uid
-                  :created_by         uid]
-    (u/require-internal-team (or (:team_id old-application) (:team_id application)) request)
+                  :created_by         uid}]
+    (u/require-internal-team (:team_id application) request)
     (sql/cmd-create-or-update-application!
       (merge defaults application {:id application_id})
       {:connection db})
