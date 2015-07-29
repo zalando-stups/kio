@@ -1,5 +1,7 @@
 # Kio
 
+[![Build Status](https://travis-ci.org/zalando-stups/kio.svg?branch=master)](https://travis-ci.org/zalando-stups/kio)
+
 Kio is the application registry in the [STUPS ecosystem](http://zalando-stups.github.io). It manages the basic
 information about an organisation's applications.
 
