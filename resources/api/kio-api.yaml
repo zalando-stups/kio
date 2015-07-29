@@ -139,6 +139,10 @@ paths:
                 type: integer
                 description: Minimum number of approvers needed for a version. Used by fullstop.
                 example: 2
+              specification_type:
+                type: string
+                description: Where tickets for the application are managed
+                example: Github
         404:
           description: Not found
         default:
@@ -449,6 +453,10 @@ definitions:
         description: Minimum number of approvers needed for a version. Used by fullstop.
         example: 2
         default: 2
+      specification_type:
+        type: string
+        description: Where tickets for the application are managed
+        example: Github
     required:
       - team_id
       - active

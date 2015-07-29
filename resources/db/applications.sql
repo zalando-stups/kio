@@ -39,6 +39,7 @@ SELECT a_id,
   a_documentation_url,
   a_specification_url,
   a_required_approvers,
+  a_specification_type,
   a_created,
   a_created_by,
   a_last_modified,
@@ -59,6 +60,7 @@ WITH application_update AS (
             a_documentation_url  = :documentation_url,
             a_specification_url  = :specification_url,
             a_required_approvers = :required_approvers,
+            a_specification_type = :specification_type,
             a_last_modified      = NOW(),
             a_last_modified_by   = :last_modified_by,
             a_created_by         = :created_by
@@ -76,6 +78,7 @@ INSERT INTO zk_data.application (
             a_documentation_url,
             a_specification_url,
             a_required_approvers,
+            a_specification_type,
             a_created_by,
             a_last_modified_by)
      SELECT :id,
@@ -89,6 +92,7 @@ INSERT INTO zk_data.application (
             :documentation_url,
             :specification_url,
             :required_approvers,
+            :specification_type,
             :created_by,
             :last_modified_by
       WHERE NOT EXISTS (SELECT * FROM application_update);
