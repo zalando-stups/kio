@@ -74,12 +74,12 @@
                   :service_url        nil
                   :description        nil
                   :specification_type nil
-                  :required_approvers 2
-                  :last_modified_by   uid
-                  :created_by         uid}]
+                  :required_approvers 2}]
     (u/require-internal-team (:team_id application) request)
     (sql/cmd-create-or-update-application!
-      (merge defaults application {:id application_id})
+      (merge defaults application {:id               application_id
+                                   :last_modified_by uid
+                                   :created_by       uid})
       {:connection db})
     (log/audit "Created/updated application %s using data %s." application_id application)
     (response nil)))
@@ -125,12 +125,12 @@
       (with-db-transaction
         [connection db]
         (let [uid (get-in request [:tokeninfo "uid"])
-              defaults {:notes            nil
-                        :created_by       uid
-                        :last_modified_by uid}]
+              defaults {:notes nil}]
           (sql/cmd-create-or-update-version!
             (merge defaults version {:id               version_id
-                                     :application_id   application_id})
+                                     :application_id   application_id
+                                     :created_by       uid
+                                     :last_modified_by uid})
             {:connection connection}))
         (sql/cmd-delete-approvals! {:application_id application_id
                                     :version_id version_id}
