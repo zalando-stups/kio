@@ -67,13 +67,14 @@
 
 (defn create-or-update-application! [{:keys [application application_id]} request db]
   (let [old-application (load-application application_id db)
-        defaults {:specification_url nil
-                  :documentation_url nil
-                  :subtitle          nil
-                  :scm_url           nil
-                  :service_url       nil
-                  :description       nil
-                  :required_approvers 2}]
+        defaults {:specification_url  nil
+                  :documentation_url  nil
+                  :subtitle           nil
+                  :scm_url            nil
+                  :service_url        nil
+                  :description        nil
+                  :specification_type nil
+                  :required_approvers 2  }]
     (u/require-internal-team (or (:team_id old-application) (:team_id application)) request)
     (sql/cmd-create-or-update-application!
       (merge defaults application {:id application_id})
