@@ -67,6 +67,7 @@
 
 (defn create-or-update-application! [{:keys [application application_id]} request db]
   (let [old-application (load-application application_id db)
+        uid (get-in request [:tokeninfo "uid"])
         defaults {:specification_url  nil
                   :documentation_url  nil
                   :subtitle           nil
