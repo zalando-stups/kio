@@ -66,8 +66,7 @@
       (content-type-json)))
 
 (defn create-or-update-application! [{:keys [application application_id]} request db]
-  (let [old-application (load-application application_id db)
-        uid (get-in request [:tokeninfo "uid"])
+  (let [uid (get-in request [:tokeninfo "uid"])
         defaults {:specification_url  nil
                   :documentation_url  nil
                   :subtitle           nil
@@ -77,7 +76,7 @@
                   :specification_type nil
                   :required_approvers 2
                   :last_modified_by   uid
-                  :created_by         (or (:created_by old-application) uid)}]
+                  :created_by         uid]
     (u/require-internal-team (or (:team_id old-application) (:team_id application)) request)
     (sql/cmd-create-or-update-application!
       (merge defaults application {:id application_id})
@@ -97,15 +96,6 @@
        (content-type-json)))
 
 ;; versions
-(defn load-version
-  "Loads a single version by ID"
-  [application-id version-id db]
-  (-> (sql/cmd-read-application
-        {:id version-id
-         :application_id application-id}
-        {:connection db})
-      (sql/strip-prefixes)
-      (first)))
 
 (defn read-versions-by-application [{:keys [application_id]} request db]
   (u/require-internal-user request)
@@ -134,10 +124,9 @@
       (u/require-internal-team (:team_id application) request)
       (with-db-transaction
         [connection db]
-        (let [old-version (load-version application_id version_id db)
-              uid (get-in request [:tokeninfo "uid"])
+        (let [uid (get-in request [:tokeninfo "uid"])
               defaults {:notes            nil
-                        :created_by       (or (:created_by old-version) uid)
+                        :created_by       uid
                         :last_modified_by uid}]
           (sql/cmd-create-or-update-version!
             (merge defaults version {:id               version_id

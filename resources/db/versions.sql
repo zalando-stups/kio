@@ -24,8 +24,7 @@ WITH version_update AS (
         SET v_artifact           = :artifact,
             v_notes              = :notes,
             v_last_modified      = NOW(),
-            v_last_modified_by   = :last_modified_by,
-            v_created_by         = :created_by
+            v_last_modified_by   = :last_modified_by
       WHERE v_id = :id AND v_application_id = :application_id
   RETURNING *)
 INSERT INTO zk_data.version (
