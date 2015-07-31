@@ -38,7 +38,6 @@ SELECT a_id,
   a_scm_url,
   a_documentation_url,
   a_specification_url,
-  a_required_approvers,
   a_specification_type,
   a_created,
   a_created_by,
@@ -59,7 +58,6 @@ WITH application_update AS (
             a_scm_url            = :scm_url,
             a_documentation_url  = :documentation_url,
             a_specification_url  = :specification_url,
-            a_required_approvers = :required_approvers,
             a_specification_type = :specification_type,
             a_last_modified      = NOW(),
             a_last_modified_by   = :last_modified_by
@@ -76,7 +74,6 @@ INSERT INTO zk_data.application (
             a_scm_url,
             a_documentation_url,
             a_specification_url,
-            a_required_approvers,
             a_specification_type,
             a_created_by,
             a_last_modified_by)
@@ -90,7 +87,6 @@ INSERT INTO zk_data.application (
             :scm_url,
             :documentation_url,
             :specification_url,
-            :required_approvers,
             :specification_type,
             :created_by,
             :last_modified_by
