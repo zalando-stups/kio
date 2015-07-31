@@ -90,8 +90,7 @@
                   :scm_url            nil
                   :service_url        nil
                   :description        nil
-                  :specification_type nil
-                  :required_approvers 2}]
+                  :specification_type nil}]
     (u/require-internal-team (:team_id application) request)
     (sql/cmd-create-or-update-application!
       (merge defaults application {:id               application_id
