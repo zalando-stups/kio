@@ -95,5 +95,7 @@ INSERT INTO zk_data.application (
 
 -- name: update-application-criticality!
 UPDATE zk_data.application
-   SET a_criticality_level = :criticality_level
+   SET a_criticality_level = :criticality_level,
+       a_last_modified = NOW(),
+       a_last_modified = :last_modified
  WHERE a_id = :id;

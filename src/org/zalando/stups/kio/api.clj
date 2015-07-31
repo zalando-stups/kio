@@ -14,12 +14,14 @@
 
 (ns org.zalando.stups.kio.api
   (:require [org.zalando.stups.friboo.system.http :refer [def-http-component]]
-            [org.zalando.stups.kio.sql :as sql]
-            [ring.util.response :refer :all]
+            [org.zalando.stups.friboo.config :refer [require-config]]
             [org.zalando.stups.friboo.ring :refer :all]
             [org.zalando.stups.friboo.log :as log]
             [org.zalando.stups.friboo.user :as u]
+            [org.zalando.stups.kio.sql :as sql]
             [io.sarnowski.swagger1st.util.api :as api]
+            [ring.util.response :refer :all]
+            [clojure.string :as str]
             [clojure.java.jdbc :refer [with-db-transaction]]))
 
 ; define the API component and its dependencies
@@ -27,6 +29,15 @@
 
 (def default-http-configuration
   {:http-port 8080})
+
+; shameless copy from essentials
+(defn require-special-uid
+"Checks wether a given user is configured to be allowed to access this endpoint. Workaround for now."
+[{:keys [configuration tokeninfo]}]
+(let [uids (into #{} (str/split (require-config configuration :allowed-uids) #","))]
+  (when-not (contains? uids (get tokeninfo "uid"))
+    (log/warn "ACCESS DENIED (unauthorized) because not a special user.")
+    (api/throw-error 403 "Unauthorized"))))
 
 ;; applications
 
@@ -54,6 +65,12 @@
         {:connection db})
       (sql/strip-prefixes)
       (first)))
+
+(defn application-exists?
+  "Checks whether an application with this id exists"
+  [application_id db]
+  (-> (load-application application_id db)
+      (nil?)))
 
 (defn read-application [{:keys [application_id]} request db]
   (u/require-internal-user request)
@@ -83,6 +100,16 @@
       {:connection db})
     (log/audit "Created/updated application %s using data %s." application_id application)
     (response nil)))
+
+(defn update-application-criticality! [{:keys [application_id criticality]} request db]
+  (let [uid (get-in request [:tokeninfo "uid"])]
+    (require-special-uid request)
+    (if (application-exists? application_id db)
+        (do (sql/update-application-criticality! (merge criticality {:last_modified_by uid})
+                                                 {:connection db})
+            (log/audit "Updated criticality of application %s using data %s." application_id criticality)
+            (response nil)))
+        (not-found {})))
 
 (defn read-application-approvals [{:keys [application_id]} request db]
   (u/require-internal-user request)

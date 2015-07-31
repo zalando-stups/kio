@@ -198,7 +198,7 @@ paths:
         Updates criticality level of an application.
       tags:
         - Applications
-      operationId: 'org.zalando.stups.kio.api/update-application-criticality'
+      operationId: 'org.zalando.stups.kio.api/update-application-criticality!'
       parameters:
       - $ref: '#/parameters/ApplicationId'
       - name: criticality
