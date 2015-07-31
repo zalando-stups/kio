@@ -16,5 +16,6 @@ UPDATE zk_data.application
 
 -- 3) drop the mic... erm the column
 
-ALTER TABLE zk_data.application
-DROP COLUMN a_required_approvers;
+ ALTER TABLE zk_data.application
+ DROP COLUMN a_required_approvers,
+ALTER COLUMN a_criticality_level SET NOT NULL;
