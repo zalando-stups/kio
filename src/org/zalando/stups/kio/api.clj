@@ -32,12 +32,14 @@
 
 ; shameless copy from essentials
 (defn require-special-uid
-"Checks wether a given user is configured to be allowed to access this endpoint. Workaround for now."
-[{:keys [configuration tokeninfo]}]
-(let [uids (into #{} (str/split (require-config configuration :allowed-uids) #","))]
-  (when-not (contains? uids (get tokeninfo "uid"))
-    (log/warn "ACCESS DENIED (unauthorized) because not a special user.")
-    (api/throw-error 403 "Unauthorized"))))
+  "Checks wether a given user is configured to be allowed to access this endpoint. Workaround for now."
+  [{:keys [configuration tokeninfo]}]
+  (let [allowed-uids (require-config configuration :allowed-uids)
+        uids (into #{} (str/split allowed-uids #","))]
+    (when-not (and (contains? uids (get tokeninfo "uid"))
+                   (not (empty? allowed-uids)))
+      (log/warn "ACCESS DENIED (unauthorized) because not a special user.")
+      (api/throw-error 403 "Unauthorized"))))
 
 ;; applications
 
@@ -107,8 +109,8 @@
             (sql/update-application-criticality! (merge criticality {:last_modified_by uid})
                                                  {:connection db})
             (log/audit "Updated criticality of application %s using data %s." application_id criticality)
-            (response nil)))
-        (not-found nil)))
+            (response nil))
+        (not-found nil))))
 
 (defn read-application-approvals [{:keys [application_id]} request db]
   (u/require-internal-user request)
