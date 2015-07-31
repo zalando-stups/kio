@@ -39,6 +39,7 @@ SELECT a_id,
   a_documentation_url,
   a_specification_url,
   a_specification_type,
+  a_criticality_level,
   a_created,
   a_created_by,
   a_last_modified,
@@ -91,3 +92,8 @@ INSERT INTO zk_data.application (
             :created_by,
             :last_modified_by
       WHERE NOT EXISTS (SELECT * FROM application_update);
+
+-- name: update-application-criticality!
+UPDATE zk_data.application
+   SET a_criticality_level = :criticality_level
+ WHERE a_id = :id;
