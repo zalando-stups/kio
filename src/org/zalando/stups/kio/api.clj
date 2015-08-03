@@ -81,6 +81,10 @@
                                               1
                                               2)))
 
+(defn enrich-applications
+  [applications]
+  (map enrich-application applications))
+
 (defn read-application [{:keys [application_id]} request db]
   (u/require-internal-user request)
   (log/debug "Read application %s." application_id)
@@ -88,7 +92,7 @@
         {:id application_id}
         {:connection db})
       (sql/strip-prefixes)
-      (enrich-application)
+      (enrich-applications)
       (single-response)
       (content-type-json)))
 
