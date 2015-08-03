@@ -483,10 +483,14 @@ definitions:
     type: object
     properties:
       criticality_level:
-          type: integer
-          default: 2
           description: Criticality level of an application
+          type: integer
+          minimum: 1
+          maximum: 3
+          default: 2
           example: 2
+    required:
+      - criticality_level
 
   StoreVersion:
     type: object
