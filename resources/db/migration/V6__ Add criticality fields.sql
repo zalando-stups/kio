@@ -14,8 +14,9 @@ UPDATE zk_data.application
     SET a_criticality_level = 2
   WHERE a_required_approvers > 1;
 
--- 3) drop the mic... erm the column
+-- 3) set new column NOT NULL
 
  ALTER TABLE zk_data.application
- DROP COLUMN a_required_approvers,
 ALTER COLUMN a_criticality_level SET NOT NULL;
+
+-- TODO in future migration: DROP COLUMN a_required_approvers

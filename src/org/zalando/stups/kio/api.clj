@@ -107,9 +107,9 @@
                   :specification_type nil}]
     (u/require-internal-team (:team_id application) request)
     (sql/cmd-create-or-update-application!
-      (merge defaults application {:id                application_id
-                                   :last_modified_by  uid
-                                   :created_by        uid})
+      (merge defaults application {:id               application_id
+                                   :last_modified_by uid
+                                   :created_by       uid})
       {:connection db})
     (log/audit "Created/updated application %s using data %s." application_id application)
     (response nil)))
