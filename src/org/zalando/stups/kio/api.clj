@@ -74,6 +74,13 @@
       (nil?)
       (not)))
 
+(defn enrich-application
+  "Adds calculated field(s) to an application"
+  [application]
+  (assoc application :required_approvers (if (= 1 (:criticality_level application))
+                                              1
+                                              2)))
+
 (defn read-application [{:keys [application_id]} request db]
   (u/require-internal-user request)
   (log/debug "Read application %s." application_id)
@@ -81,6 +88,7 @@
         {:id application_id}
         {:connection db})
       (sql/strip-prefixes)
+      (enrich-application)
       (single-response)
       (content-type-json)))
 

@@ -13,6 +13,21 @@
     (is (:id (api/load-application "kio" nil)
         "kio"))))
 
+(deftest test-enrich-application1
+  (let [app {:criticality_level 1}
+        approvers (:required_approvers (api/enrich-application app))]
+    (is (= 1 approvers))))
+
+(deftest test-enrich-application2
+  (let [app {:criticality_level 2}
+        approvers (:required_approvers (api/enrich-application app))]
+    (is (= 2 approvers))))
+
+(deftest test-enrich-application3
+  (let [app {:criticality_level 3}
+        approvers (:required_approvers (api/enrich-application app))]
+    (is (= 2 approvers))))
+
 (deftest test-update-application-criticality1
   "If the application does not exist, it should not call update and return 404"
   (let [calls (atom 0)
