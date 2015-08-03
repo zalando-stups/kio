@@ -191,7 +191,7 @@ paths:
         default:
           $ref: '#/responses/Error'
 
-  'app/{application_id}/criticality':
+  '/apps/{application_id}/criticality':
     put:
       summary: update criticality level
       description: |
@@ -200,7 +200,7 @@ paths:
         - Applications
       operationId: 'org.zalando.stups.kio.api/update-application-criticality!'
       parameters:
-      - $ref: '#/parameters/ApplicationId'
+      - $ref: '#/parameters/ApplicationID'
       - name: criticality
         in: body
         description: Criticality level that will be saved.

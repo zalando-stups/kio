@@ -97,5 +97,5 @@ INSERT INTO zk_data.application (
 UPDATE zk_data.application
    SET a_criticality_level = :criticality_level,
        a_last_modified = NOW(),
-       a_last_modified = :last_modified
+       a_last_modified_by = :last_modified_by
  WHERE a_id = :id;

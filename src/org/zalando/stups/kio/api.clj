@@ -34,10 +34,10 @@
 (defn require-special-uid
   "Checks wether a given user is configured to be allowed to access this endpoint. Workaround for now."
   [{:keys [configuration tokeninfo]}]
-  (let [allowed-uids (require-config configuration :allowed-uids)
+  (let [allowed-uids (or (:allowed-uids configuration) "")
         uids (into #{} (str/split allowed-uids #","))]
-    (when-not (and (contains? uids (get tokeninfo "uid"))
-                   (not (empty? allowed-uids)))
+    (when (and (not (contains? uids (get tokeninfo "uid")))
+               (not (empty? allowed-uids)))
       (log/warn "ACCESS DENIED (unauthorized) because not a special user.")
       (api/throw-error 403 "Unauthorized"))))
 
@@ -61,10 +61,9 @@
 
 (defn load-application
   "Loads a single application by ID, used for team checks."
-  [application-id db]
-  (-> (sql/cmd-read-application
-        {:id application-id}
-        {:connection db})
+  [application_id db]
+  (-> (sql/cmd-read-application {:id application_id}
+                                {:connection db})
       (sql/strip-prefixes)
       (first)))
 
@@ -72,7 +71,8 @@
   "Checks whether an application with this id exists"
   [application_id db]
   (-> (load-application application_id db)
-      (nil?)))
+      (nil?)
+      (not)))
 
 (defn read-application [{:keys [application_id]} request db]
   (u/require-internal-user request)
@@ -95,9 +95,9 @@
                   :specification_type nil}]
     (u/require-internal-team (:team_id application) request)
     (sql/cmd-create-or-update-application!
-      (merge defaults application {:id               application_id
-                                   :last_modified_by uid
-                                   :created_by       uid})
+      (merge defaults application {:id                application_id
+                                   :last_modified_by  uid
+                                   :created_by        uid})
       {:connection db})
     (log/audit "Created/updated application %s using data %s." application_id application)
     (response nil)))
@@ -106,7 +106,8 @@
   (let [uid (get-in request [:tokeninfo "uid"])]
     (if (application-exists? application_id db)
         (do (require-special-uid request)
-            (sql/update-application-criticality! (merge criticality {:last_modified_by uid})
+            (sql/update-application-criticality! (merge criticality {:last_modified_by uid
+                                                                     :id application_id})
                                                  {:connection db})
             (log/audit "Updated criticality of application %s using data %s." application_id criticality)
             (response nil))
