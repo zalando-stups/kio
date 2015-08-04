@@ -35,9 +35,10 @@
   "Checks wether a given user is configured to be allowed to access this endpoint. Workaround for now."
   [{:keys [configuration tokeninfo]}]
   (let [allowed-uids (or (:allowed-uids configuration) "")
-        uids (into #{} (str/split allowed-uids #","))]
-    (when (and (not (contains? uids (get tokeninfo "uid")))
-               (not (empty? allowed-uids)))
+        allowed (set (str/split allowed-uids #","))
+        uid (get tokeninfo "uid")]
+    (when (and (seq allowed-uids)
+               (not (allowed uid)))
       (log/warn "ACCESS DENIED (unauthorized) because not a special user.")
       (api/throw-error 403 "Unauthorized"))))
 
