@@ -46,7 +46,7 @@
                  :configuration {:allowed-uids "npiccolotto"}}
         db nil
         criticality nil]
-    (with-redefs [api/load-application (constantly nil)
+    (with-redefs [api/load-application (constantly {:id "kio"})
                   sql/update-application-criticality! (constantly 1)]
       (is (-> (api/update-application-criticality! criticality request db)
               (get :status)
@@ -58,7 +58,7 @@
                  :configuration {:allowed-uids "foo,bar"}}
         db nil
         criticality nil]
-    (with-redefs [api/load-application (constantly nil)
+    (with-redefs [api/load-application (constantly {:id "kio"})
                   sql/update-application-criticality! (constantly 1)]
       (try (do (api/update-application-criticality! criticality request db)
                (is false))
