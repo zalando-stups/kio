@@ -135,6 +135,10 @@ paths:
                 type: string
                 description: URL of the specification tool
                 example: https://github.com/zalando-stups/kio/issues
+              required_approvers:
+                type: integer
+                description: Minimum number of approvers needed for a version. Used by fullstop.
+                example: 2
               specification_type:
                 type: string
                 description: Where tickets for the application are managed
@@ -470,6 +474,12 @@ definitions:
         type: string
         description: URL of the specification tool
         example: https://github.com/zalando-stups/kio/issues
+      required_approvers:
+        type: integer
+        minimum: 1
+        description: DEPRECATED! Minimum number of approvers needed for a version. Used by fullstop.
+        example: 2
+        default: 2
       specification_type:
         type: string
         description: Where tickets for the application are managed
