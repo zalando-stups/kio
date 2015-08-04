@@ -34,7 +34,7 @@
         criticality nil
         request nil
         db nil]
-    (with-redefs [api/application-exists? (constantly false)
+    (with-redefs [api/load-application (constantly nil)
                   sql/update-application-criticality! (fn [] (swap! calls inc))]
       (let [response (api/update-application-criticality! criticality request db)]
         (is (= @calls 0))
@@ -46,7 +46,7 @@
                  :configuration {:allowed-uids "npiccolotto"}}
         db nil
         criticality nil]
-    (with-redefs [api/application-exists? (constantly true)
+    (with-redefs [api/load-application (constantly nil)
                   sql/update-application-criticality! (constantly 1)]
       (is (-> (api/update-application-criticality! criticality request db)
               (get :status)
@@ -58,7 +58,7 @@
                  :configuration {:allowed-uids "foo,bar"}}
         db nil
         criticality nil]
-    (with-redefs [api/application-exists? (constantly true)
+    (with-redefs [api/load-application (constantly nil)
                   sql/update-application-criticality! (constantly 1)]
       (try (do (api/update-application-criticality! criticality request db)
                (is false))

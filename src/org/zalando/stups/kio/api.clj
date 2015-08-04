@@ -68,13 +68,6 @@
       (sql/strip-prefixes)
       (first)))
 
-(defn application-exists?
-  "Checks whether an application with this id exists"
-  [application_id db]
-  (-> (load-application application_id db)
-      (nil?)
-      (not)))
-
 (defn enrich-application
   "Adds calculated field(s) to an application"
   [application]
@@ -117,7 +110,7 @@
 
 (defn update-application-criticality! [{:keys [application_id criticality]} request db]
   (let [uid (get-in request [:tokeninfo "uid"])]
-    (if (application-exists? application_id db)
+    (if (load-application application_id db)
         (do (require-special-uid request)
             (sql/update-application-criticality! (merge criticality {:last_modified_by uid
                                                                      :id application_id})
