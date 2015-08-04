@@ -14,7 +14,6 @@
   :uberjar-name "kio.jar"
 
   :plugins [[io.sarnowski/lein-docker "1.1.0"]
-            [lein-ancient "0.6.7"]
             [org.zalando.stups/lein-scm-source "0.1.0"]]
 
   :docker {:image-name #=(eval (str (some-> (System/getenv "DEFAULT_DOCKER_REGISTRY")
