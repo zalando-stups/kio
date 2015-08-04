@@ -477,7 +477,7 @@ definitions:
       required_approvers:
         type: integer
         minimum: 1
-        description: DEPRECATED! Minimum number of approvers needed for a version. Used by fullstop.
+        description: DEPRECATED! WILL BE REMOVED IN NEXT RELASE! Minimum number of approvers needed for a version. Used by fullstop.
         example: 2
         default: 2
       specification_type:
