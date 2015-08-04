@@ -1,7 +1,8 @@
 -- name: read-versions-by-application
 SELECT v_id,
        v_application_id,
-       v_artifact
+       v_artifact,
+       v_last_modified
   FROM zk_data.version
  WHERE v_application_id = :application_id;
 
