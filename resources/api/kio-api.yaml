@@ -143,6 +143,24 @@ paths:
                 type: string
                 description: Where tickets for the application are managed
                 example: Github
+              last_modified:
+                type: string
+                format: date-time
+                description: Point in time when the application was created or last modified.
+                example: '2015-04-25T16:25:00.000Z'
+              last_modified_by:
+                type: string
+                description: Who modified the application last
+                example: npiccolotto
+              created:
+                type: string
+                format: date-time
+                description: Point in time when the application was created.
+                example: '2015-04-25T16:25:00.000Z'
+              created_by:
+                type: string
+                description: Who created the application
+                example: npiccolotto
         404:
           description: Not found
         default:
@@ -263,6 +281,19 @@ paths:
                 format: date-time
                 description: Point in time when the version was created or last modified.
                 example: '2015-04-25T16:25:00.000Z'
+              last_modified_by:
+                type: string
+                description: Who modified the version last
+                example: npiccolotto
+              created:
+                type: string
+                format: date-time
+                description: Point in time when the version was created.
+                example: '2015-04-25T16:25:00.000Z'
+              created_by:
+                type: string
+                description: Who created the version
+                example: npiccolotto
               artifact:
                 type: string
                 description: Software artifact reference of this version
