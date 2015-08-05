@@ -20,13 +20,12 @@
                                                       (str "/"))
                                               "stups/kio"))}
 
-  :release-tasks [["clean"]
+  :release-tasks [["vcs" "assert-committed"]
+                  ["clean"]
                   ["test"]
-                  ["vcs" "assert-committed"]
                   ["change" "version" "leiningen.release/bump-version" "release"]
                   ["vcs" "commit"]
                   ["vcs" "tag"]
-                  ["clean"]
                   ["uberjar"]
                   ["scm-source"]
                   ["docker" "build"]
