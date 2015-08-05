@@ -21,10 +21,11 @@
                                               "stups/kio"))}
 
   :release-tasks [["vcs" "assert-committed"]
+                  ["clean"]
+                  ["test"]
                   ["change" "version" "leiningen.release/bump-version" "release"]
                   ["vcs" "commit"]
                   ["vcs" "tag"]
-                  ["clean"]
                   ["uberjar"]
                   ["scm-source"]
                   ["docker" "build"]

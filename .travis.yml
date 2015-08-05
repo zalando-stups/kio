@@ -1,4 +1,7 @@
 language: clojure
-script: lein do clean, uberjar
+script:
+  - lein clean
+  - lein test
+  - lein uberjar
 jdk:
   - oraclejdk8

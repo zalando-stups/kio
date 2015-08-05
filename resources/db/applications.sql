@@ -38,8 +38,8 @@ SELECT a_id,
   a_scm_url,
   a_documentation_url,
   a_specification_url,
-  a_required_approvers,
   a_specification_type,
+  a_criticality_level,
   a_created,
   a_created_by,
   a_last_modified,
@@ -59,7 +59,6 @@ WITH application_update AS (
             a_scm_url            = :scm_url,
             a_documentation_url  = :documentation_url,
             a_specification_url  = :specification_url,
-            a_required_approvers = :required_approvers,
             a_specification_type = :specification_type,
             a_last_modified      = NOW(),
             a_last_modified_by   = :last_modified_by
@@ -76,7 +75,6 @@ INSERT INTO zk_data.application (
             a_scm_url,
             a_documentation_url,
             a_specification_url,
-            a_required_approvers,
             a_specification_type,
             a_created_by,
             a_last_modified_by)
@@ -90,8 +88,14 @@ INSERT INTO zk_data.application (
             :scm_url,
             :documentation_url,
             :specification_url,
-            :required_approvers,
             :specification_type,
             :created_by,
             :last_modified_by
       WHERE NOT EXISTS (SELECT * FROM application_update);
+
+-- name: update-application-criticality!
+UPDATE zk_data.application
+   SET a_criticality_level = :criticality_level,
+       a_last_modified = NOW(),
+       a_last_modified_by = :last_modified_by
+ WHERE a_id = :id;

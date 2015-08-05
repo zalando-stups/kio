@@ -14,12 +14,14 @@
 
 (ns org.zalando.stups.kio.api
   (:require [org.zalando.stups.friboo.system.http :refer [def-http-component]]
-            [org.zalando.stups.kio.sql :as sql]
-            [ring.util.response :refer :all]
+            [org.zalando.stups.friboo.config :refer [require-config]]
             [org.zalando.stups.friboo.ring :refer :all]
             [org.zalando.stups.friboo.log :as log]
             [org.zalando.stups.friboo.user :as u]
+            [org.zalando.stups.kio.sql :as sql]
             [io.sarnowski.swagger1st.util.api :as api]
+            [ring.util.response :refer :all]
+            [clojure.string :as str]
             [clojure.java.jdbc :refer [with-db-transaction]]))
 
 ; define the API component and its dependencies
@@ -27,6 +29,18 @@
 
 (def default-http-configuration
   {:http-port 8080})
+
+; shameless copy from essentials
+(defn require-special-uid
+  "Checks wether a given user is configured to be allowed to access this endpoint. Workaround for now."
+  [{:keys [configuration tokeninfo]}]
+  (let [allowed-uids (or (:allowed-uids configuration) "")
+        allowed (set (str/split allowed-uids #","))
+        uid (get tokeninfo "uid")]
+    (when (and (seq allowed-uids)
+               (not (allowed uid)))
+      (log/warn "ACCESS DENIED (unauthorized) because not a special user.")
+      (api/throw-error 403 "Unauthorized"))))
 
 ;; applications
 
@@ -48,12 +62,22 @@
 
 (defn load-application
   "Loads a single application by ID, used for team checks."
-  [application-id db]
-  (-> (sql/cmd-read-application
-        {:id application-id}
-        {:connection db})
+  [application_id db]
+  (-> (sql/cmd-read-application {:id application_id}
+                                {:connection db})
       (sql/strip-prefixes)
       (first)))
+
+(defn enrich-application
+  "Adds calculated field(s) to an application"
+  [application]
+  (assoc application :required_approvers (if (= 1 (:criticality_level application))
+                                              1
+                                              2)))
+
+(defn enrich-applications
+  [applications]
+  (map enrich-application applications))
 
 (defn read-application [{:keys [application_id]} request db]
   (u/require-internal-user request)
@@ -62,6 +86,7 @@
         {:id application_id}
         {:connection db})
       (sql/strip-prefixes)
+      (enrich-applications)
       (single-response)
       (content-type-json)))
 
@@ -73,8 +98,7 @@
                   :scm_url            nil
                   :service_url        nil
                   :description        nil
-                  :specification_type nil
-                  :required_approvers 2}]
+                  :specification_type nil}]
     (u/require-internal-team (:team_id application) request)
     (sql/cmd-create-or-update-application!
       (merge defaults application {:id               application_id
@@ -83,6 +107,17 @@
       {:connection db})
     (log/audit "Created/updated application %s using data %s." application_id application)
     (response nil)))
+
+(defn update-application-criticality! [{:keys [application_id criticality]} request db]
+  (let [uid (get-in request [:tokeninfo "uid"])]
+    (if (load-application application_id db)
+        (do (require-special-uid request)
+            (sql/update-application-criticality! (merge criticality {:last_modified_by uid
+                                                                     :id application_id})
+                                                 {:connection db})
+            (log/audit "Updated criticality of application %s using data %s." application_id criticality)
+            (response nil))
+        (not-found nil))))
 
 (defn read-application-approvals [{:keys [application_id]} request db]
   (u/require-internal-user request)

@@ -143,6 +143,10 @@ paths:
                 type: string
                 description: Where tickets for the application are managed
                 example: Github
+              criticality_level:
+                type: integer
+                description: The criticality level of the application
+                example: 2
               last_modified:
                 type: string
                 format: date-time
@@ -204,6 +208,29 @@ paths:
             type: array
             items:
               type: string
+        404:
+          description: Not found
+        default:
+          $ref: '#/responses/Error'
+
+  '/apps/{application_id}/criticality':
+    put:
+      summary: update criticality level
+      description: |
+        Updates criticality level of an application.
+      tags:
+        - Applications
+      operationId: 'org.zalando.stups.kio.api/update-application-criticality!'
+      parameters:
+      - $ref: '#/parameters/ApplicationID'
+      - name: criticality
+        in: body
+        description: Criticality level that will be saved.
+        schema:
+          '$ref': '#/definitions/StoreApplicationCriticality'
+      responses:
+        200:
+          description: Updated successfully
         404:
           description: Not found
         default:
@@ -481,7 +508,7 @@ definitions:
       required_approvers:
         type: integer
         minimum: 1
-        description: Minimum number of approvers needed for a version. Used by fullstop.
+        description: DEPRECATED! WILL BE REMOVED IN NEXT RELASE! Minimum number of approvers needed for a version. Used by fullstop.
         example: 2
         default: 2
       specification_type:
@@ -492,6 +519,19 @@ definitions:
       - team_id
       - active
       - name
+
+  StoreApplicationCriticality:
+    type: object
+    properties:
+      criticality_level:
+          description: Criticality level of an application
+          type: integer
+          minimum: 1
+          maximum: 3
+          default: 2
+          example: 2
+    required:
+      - criticality_level
 
   StoreVersion:
     type: object
