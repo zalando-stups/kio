@@ -1,5 +1,5 @@
 -- name: read-applications
-SELECT a_id, a_team_id, a_active, a_name, a_subtitle, a_service_url
+SELECT a_id, a_team_id, a_active, a_name, a_subtitle, a_service_url, a_last_modified
   FROM zk_data.application;
 
 -- name: search-applications
@@ -9,6 +9,7 @@ SELECT a_id,
   a_name,
   a_subtitle,
   a_service_url,
+  a_last_modified,
   ts_rank_cd(vector, query) AS matched_rank,
   ts_headline('simple', a_description, query) AS matched_description
 FROM (SELECT a_id,

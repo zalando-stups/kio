@@ -34,7 +34,11 @@
 (def column-prefix-pattern #"[a-z]+_(.+)")
 
 (defn remove-prefix [m]
-  (->> m name (re-find column-prefix-pattern) second keyword))
+  (->> m
+       name
+       (re-find column-prefix-pattern)
+       second
+       keyword))
 
 (defn strip-prefixes
   "Removes the database field prefix."
