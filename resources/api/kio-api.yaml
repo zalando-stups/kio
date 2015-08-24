@@ -66,6 +66,23 @@ paths:
                   type: string
                   description: URL of the service
                   example: https://kio.example.com/
+                scm_url:
+                  type: string
+                  description: URL of SCM repository
+                  example: https://github.com/zalando-stups/kio.git
+                documentation_url:
+                  type: string
+                  description: URL of documentation
+                  example: https://github.com/zalando-stups/kio
+                specification_url:
+                  type: string
+                  description: URL of the specification tool
+                  example: https://github.com/zalando-stups/kio/issues
+                last_modified:
+                  type: string
+                  format: date-time
+                  description: Point in time when the application was created or last modified.
+                  example: '2015-04-25T16:25:00.000Z'
                 matched_rank:
                   type: number
                   description: Search result rank for ordering
