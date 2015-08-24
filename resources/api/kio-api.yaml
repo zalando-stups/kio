@@ -38,6 +38,18 @@ paths:
           description: "Search term for application filtering."
           type: string
           required: false
+        - name: modified_before
+          in: query
+          description: "Only include apps that were modified before date"
+          type: string
+          format: date-time
+          required: false
+        - name: modified_after
+          in: query
+          description: "Only include apps that were modified after date"
+          type: string
+          format: date-time
+          required: false
       responses:
         200:
           description: List of all applications
