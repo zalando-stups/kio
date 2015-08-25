@@ -18,6 +18,7 @@ FROM (SELECT a_id,
         a_name,
         a_subtitle,
         a_service_url,
+        a_last_modified,
         a_description,
         setweight(to_tsvector('simple', a_name), 'A')
         || setweight(to_tsvector('simple', COALESCE(a_subtitle, '')), 'B')
