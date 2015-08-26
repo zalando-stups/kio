@@ -19,7 +19,6 @@
             [org.zalando.stups.friboo.log :as log]
             [org.zalando.stups.friboo.user :as u]
             [org.zalando.stups.kio.sql :as sql]
-            [clj-time.core :as t]
             [clj-time.coerce :as tcoerce]
             [io.sarnowski.swagger1st.util.api :as api]
             [ring.util.response :refer :all]
@@ -50,24 +49,22 @@
   [{:keys [search modified_before modified_after]} request db]
   (u/require-internal-user request)
   (let [conn {:connection db}
-        apps (if (nil? search)
-                 (sql/cmd-read-applications {} conn)
-                 (sql/cmd-search-applications {:searchquery search} conn))]
+        params {:searchquery search
+                :modified_before (tcoerce/to-sql-time modified_before)
+                :modified_after (tcoerce/to-sql-time modified_after)}]
     (if (nil? search)
+      (do
         (log/debug "Read all applications.")
-        (log/debug "Search in applications with term %s." search))
-    (->> apps
-         (sql/strip-prefixes)
-         (filter #(if modified_before
-                      (t/before? (tcoerce/from-sql-time (:last_modified %))
-                                 modified_before)
-                      true))
-         (filter #(if modified_after
-                      (t/after? (tcoerce/from-sql-time (:last_modified %))
-                                modified_after)
-                      true))
-         (response)
-         (content-type-json))))
+        (-> (sql/cmd-read-applications params conn)
+            (sql/strip-prefixes)
+            (response)
+            (content-type-json)))
+      (do
+        (log/debug "Search in applications with term %s." search)
+        (-> (sql/cmd-search-applications params conn)
+            (sql/strip-prefixes)
+            (response)
+            (content-type-json))))))
 
 (defn load-application
   "Loads a single application by ID, used for team checks."

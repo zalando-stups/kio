@@ -1,6 +1,14 @@
 -- name: read-applications
-SELECT a_id, a_team_id, a_active, a_name, a_subtitle, a_service_url, a_last_modified
-  FROM zk_data.application;
+SELECT a_id,
+       a_team_id,
+       a_active,
+       a_name,
+       a_subtitle,
+       a_service_url,
+       a_last_modified
+  FROM zk_data.application
+ WHERE a_last_modified <= COALESCE(:modified_before, a_last_modified)
+       AND a_last_modified >= COALESCE(:modified_after, a_last_modified);
 
 -- name: search-applications
 SELECT a_id,
@@ -27,6 +35,8 @@ FROM (SELECT a_id,
       FROM zk_data.application) as apps,
   to_tsquery('simple', :searchquery) query
 WHERE query @@ vector
+      AND a_last_modified <= COALESCE(:modified_before, a_last_modified)
+      AND a_last_modified >= COALESCE(:modified_after, a_last_modified)
 ORDER BY matched_rank DESC;
 
 --name: read-application
