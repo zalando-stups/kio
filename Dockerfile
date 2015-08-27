@@ -1,8 +1,11 @@
-FROM zalando/openjdk:8u45-b14-5
+FROM zalando/openjdk:8u45-b14-6
 
 MAINTAINER Zalando SE
 
 COPY target/kio.jar /
+
+RUN mkdir /appdynamics
+COPY appdynamics /appdynamics
 
 EXPOSE 8080
 ENV HTTP_PORT=8080
