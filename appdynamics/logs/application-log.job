@@ -1,0 +1,29 @@
+version: 1
+enabled: true
+
+# read file from beginning or from latest entry?
+startAtEnd: false
+
+# what to index
+file:
+    path: /var/log
+    nameGlob: application.log
+
+# application log starts with syslog date, which starts with 3-letter month name like "Aug"
+multiline:
+   regex: "[A-Z][a-z]{2} .*"
+
+# tag log lines with these properties
+fields:
+   sourceType: application
+   ApplicationName: PaaS
+   TierName: kio
+
+# some predefined parsing
+grok:
+  patterns:
+    - "%{SYSLOGBASE2:syslogbase} %{GREEDYDATA:logMessage}"
+
+# how to parse THE event timestamp from the text line
+eventTimestamp:
+   pattern: "M d HH:mm:ss"
