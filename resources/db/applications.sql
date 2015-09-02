@@ -22,8 +22,8 @@ SELECT a_id,
          a_documentation_url,
          a_specification_url,
          a_last_modified,
-         ts_rank_cd(vector, query) AS matched_rank,
-         ts_headline('simple', a_description, query) AS matched_description
+         ts_rank_cd(vector, query) AS a_matched_rank,
+         ts_headline('simple', a_description, query) AS a_matched_description
     FROM (SELECT a_id,
                  a_team_id,
                  a_active,
@@ -42,7 +42,7 @@ SELECT a_id,
             FROM zk_data.application) as apps,
                  to_tsquery('simple', :searchquery) query
    WHERE query @@ vector
-ORDER BY matched_rank DESC;
+ORDER BY a_matched_rank DESC;
 
 --name: read-application
 SELECT a_id,
