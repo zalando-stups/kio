@@ -1,49 +1,66 @@
 -- name: read-applications
-SELECT a_id, a_team_id, a_active, a_name, a_subtitle, a_service_url
+SELECT a_id,
+       a_team_id,
+       a_active,
+       a_name,
+       a_subtitle,
+       a_service_url,
+       a_scm_url,
+       a_documentation_url,
+       a_specification_url,
+       a_last_modified
   FROM zk_data.application;
 
 -- name: search-applications
-SELECT a_id,
-  a_team_id,
-  a_active,
-  a_name,
-  a_subtitle,
-  a_service_url,
-  ts_rank_cd(vector, query) AS matched_rank,
-  ts_headline('simple', a_description, query) AS matched_description
-FROM (SELECT a_id,
-        a_team_id,
-        a_active,
-        a_name,
-        a_subtitle,
-        a_service_url,
-        a_description,
-        setweight(to_tsvector('simple', a_name), 'A')
-        || setweight(to_tsvector('simple', COALESCE(a_subtitle, '')), 'B')
-        || setweight(to_tsvector('simple', COALESCE(a_description, '')), 'C')
-          as vector
-      FROM zk_data.application) as apps,
-  to_tsquery('simple', :searchquery) query
-WHERE query @@ vector
-ORDER BY matched_rank DESC;
+  SELECT a_id,
+         a_team_id,
+         a_active,
+         a_name,
+         a_subtitle,
+         a_service_url,
+         a_scm_url,
+         a_documentation_url,
+         a_specification_url,
+         a_last_modified,
+         ts_rank_cd(vector, query) AS a_matched_rank,
+         ts_headline('simple', a_description, query) AS a_matched_description
+    FROM (SELECT a_id,
+                 a_team_id,
+                 a_active,
+                 a_name,
+                 a_subtitle,
+                 a_service_url,
+                 a_scm_url,
+                 a_documentation_url,
+                 a_specification_url,
+                 a_last_modified,
+                 a_description,
+                 setweight(to_tsvector('simple', a_name), 'A')
+                 || setweight(to_tsvector('simple', COALESCE(a_subtitle, '')), 'B')
+                 || setweight(to_tsvector('simple', COALESCE(a_description, '')), 'C')
+                   as vector
+            FROM zk_data.application) as apps,
+                 to_tsquery('simple', :searchquery) query
+   WHERE query @@ vector
+ORDER BY a_matched_rank DESC;
 
 --name: read-application
 SELECT a_id,
-  a_team_id,
-  a_active,
-  a_name,
-  a_subtitle,
-  a_description,
-  a_service_url,
-  a_scm_url,
-  a_documentation_url,
-  a_specification_url,
-  a_specification_type,
-  a_criticality_level,
-  a_created,
-  a_created_by,
-  a_last_modified,
-  a_last_modified_by
+       a_team_id,
+       a_active,
+       a_name,
+       a_subtitle,
+       a_description,
+       a_service_url,
+       a_scm_url,
+       a_documentation_url,
+       a_specification_url,
+       a_specification_type,
+       a_criticality_level,
+       a_created,
+       a_created_by,
+       a_last_modified,
+       a_last_modified_by
   FROM zk_data.application
  WHERE a_id = :id;
 
