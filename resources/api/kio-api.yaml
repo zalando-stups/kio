@@ -194,6 +194,14 @@ paths:
                 type: string
                 description: Who created the application
                 example: npiccolotto
+              publicly_accessible:
+                type: boolean
+                description: |
+                  Marks an app as "publicly available" (on the internet). A public app usually has a landing or login
+                  page and does not expose confidential data to unauthorized users. Examples are: Blogs, Job Portals,
+                  Shops, and so on. Secured (REST)-APIs and micro services are no public endpoints, even if they are
+                  available over the internet.
+                example: true
         404:
           description: Not found
         default:
@@ -544,6 +552,14 @@ definitions:
         type: string
         description: Where tickets for the application are managed
         example: Github
+      publicly_accessible:
+        type: boolean
+        description: |
+          Marks an app as "publicly available" (on the internet). A public app usually has a landing or login
+          page and does not expose confidential data to unauthorized users. Examples are: Blogs, Job Portals,
+          Shops, and so on. Secured (REST)-APIs and micro services are no public endpoints, even if they are
+          available over the internet.
+        example: true
     required:
       - team_id
       - active

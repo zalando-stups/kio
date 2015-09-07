@@ -31,6 +31,10 @@
 (def default-http-configuration
   {:http-port 8080})
 
+(defn get-uid
+  [request]
+  (get-in request [:tokeninfo "uid"] "no_uid_available"))
+
 ; shameless copy from essentials
 (defn require-special-uid
   "Checks wether a given user is configured to be allowed to access this endpoint. Workaround for now."
@@ -49,9 +53,9 @@
   [{:keys [search modified_before modified_after]} request db]
   (u/require-internal-user request)
   (let [conn {:connection db}
-        params {:searchquery search
+        params {:searchquery     search
                 :modified_before (tcoerce/to-sql-time modified_before)
-                :modified_after (tcoerce/to-sql-time modified_after)}]
+                :modified_after  (tcoerce/to-sql-time modified_after)}]
     (if (nil? search)
       (do
         (log/debug "Read all applications.")
@@ -78,8 +82,8 @@
   "Adds calculated field(s) to an application"
   [application]
   (assoc application :required_approvers (if (= 1 (:criticality_level application))
-                                              1
-                                              2)))
+                                           1
+                                           2)))
 
 (defn enrich-applications
   [applications]
@@ -97,14 +101,15 @@
       (content-type-json)))
 
 (defn create-or-update-application! [{:keys [application application_id]} request db]
-  (let [uid (get-in request [:tokeninfo "uid"])
-        defaults {:specification_url  nil
-                  :documentation_url  nil
-                  :subtitle           nil
-                  :scm_url            nil
-                  :service_url        nil
-                  :description        nil
-                  :specification_type nil}]
+  (let [uid (get-uid request)
+        defaults {:specification_url   nil
+                  :documentation_url   nil
+                  :subtitle            nil
+                  :scm_url             nil
+                  :service_url         nil
+                  :description         nil
+                  :specification_type  nil
+                  :publicly_accessible false}]
     (u/require-internal-team (:team_id application) request)
     (sql/cmd-create-or-update-application!
       (merge defaults application {:id               application_id
@@ -115,15 +120,15 @@
     (response nil)))
 
 (defn update-application-criticality! [{:keys [application_id criticality]} request db]
-  (let [uid (get-in request [:tokeninfo "uid"])]
+  (let [uid (get-uid request)]
     (if (load-application application_id db)
-        (do (require-special-uid request)
-            (sql/update-application-criticality! (merge criticality {:last_modified_by uid
-                                                                     :id application_id})
-                                                 {:connection db})
-            (log/audit "Updated criticality of application %s using data %s." application_id criticality)
-            (response nil))
-        (not-found nil))))
+      (do (require-special-uid request)
+          (sql/update-application-criticality! (merge criticality {:last_modified_by uid
+                                                                   :id               application_id})
+                                               {:connection db})
+          (log/audit "Updated criticality of application %s using data %s." application_id criticality)
+          (response nil))
+      (not-found nil))))
 
 (defn read-application-approvals [{:keys [application_id]} request db]
   (u/require-internal-user request)
@@ -174,7 +179,7 @@
                                      :last_modified_by uid})
             {:connection connection}))
         (sql/cmd-delete-approvals! {:application_id application_id
-                                    :version_id version_id}
+                                    :version_id     version_id}
                                    {:connection connection}))
       (log/audit "Created/updated version %s for application %s using data %s." version_id application_id version)
       (response nil))
