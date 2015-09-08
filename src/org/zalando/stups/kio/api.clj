@@ -137,7 +137,7 @@
          {:application_id application_id}
          {:connection db})
        (sql/strip-prefixes)
-       (map #(:approval_type %))
+       (map :approval_type)
        (response)
        (content-type-json)))
 
