@@ -22,6 +22,14 @@ security:
 
 paths:
 
+  '/':
+    get:
+      summary: Application root
+      operationId: org.zalando.stups.friboo.system.http/redirect-to-swagger-ui
+      responses:
+        default:
+          description: "Redirects to /ui/"
+
   # applications
 
   '/apps':
