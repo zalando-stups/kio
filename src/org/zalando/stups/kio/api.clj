@@ -31,9 +31,11 @@
 (def default-http-configuration
   {:http-port 8080})
 
-(defn get-uid
-  [request]
-  (get-in request [:tokeninfo "uid"] "no_uid_available"))
+(defn from-token
+  [request field & return-default]
+  (get-in request
+          [:tokeninfo field]
+          (when return-default return-default)))
 
 ; shameless copy from essentials
 (defn require-special-uid
@@ -46,6 +48,35 @@
                (not (allowed uid)))
       (log/warn "ACCESS DENIED (unauthorized) because not a special user.")
       (api/throw-error 403 "Unauthorized"))))
+
+(defn- require-service-authorization
+  [request]
+  ; we have to limit which robots access it for now
+  (require-special-uid request)
+  ; and check that they have the correct scope
+  (when-not (some #(= % "application.write_all")
+                  (from-token request "scope"))
+    (log/warn "ACCESS DENIED (unauthorized) because insufficient scopes.")
+    (api/throw-error 403 "Unauthorized")))
+
+(defn require-uid
+  "Checks whether uid is present on token, throws 403 otherwise"
+  [request]
+  (when-not (from-token request "uid")
+    (log/warn "ACCESS DENIED (unauthorized) because no uid in tokeninfo.")
+    (api/throw-error 403 "Unauthorized")))
+
+(defn require-write-authorization
+  "If user is employee, check that is in correct team.
+   If user is service, check that it has application_write.all scope"
+  [request team]
+  (require-uid request)
+  (u/require-internal-user request)
+  (let [realm (from-token request "realm")]
+    (when (= realm "/services")
+      (require-service-authorization request))
+    (when (= realm "/employees")
+      (u/require-internal-team team request))))
 
 ;; applications
 
@@ -101,7 +132,7 @@
       (content-type-json)))
 
 (defn create-or-update-application! [{:keys [application application_id]} request db]
-  (let [uid (get-uid request)
+  (let [uid (from-token request "uid")
         defaults {:specification_url   nil
                   :documentation_url   nil
                   :subtitle            nil
@@ -110,7 +141,7 @@
                   :description         nil
                   :specification_type  nil
                   :publicly_accessible false}]
-    (u/require-internal-team (:team_id application) request)
+    (require-write-authorization request (:team_id application))
     (sql/cmd-create-or-update-application!
       (merge defaults application {:id               application_id
                                    :last_modified_by uid
@@ -120,7 +151,7 @@
     (response nil)))
 
 (defn update-application-criticality! [{:keys [application_id criticality]} request db]
-  (let [uid (get-uid request)]
+  (let [uid (from-token request "uid" "no_uid_available")]
     (if (load-application application_id db)
       (do (require-special-uid request)
           (sql/update-application-criticality! (merge criticality {:last_modified_by uid
@@ -167,10 +198,10 @@
 (defn create-or-update-version! [{:keys [application_id version_id version]} request db]
   (if-let [application (load-application application_id db)]
     (do
-      (u/require-internal-team (:team_id application) request)
+      (require-write-authorization request (:team_id application))
       (with-db-transaction
         [connection db]
-        (let [uid (get-in request [:tokeninfo "uid"])
+        (let [uid (from-token request "uid")
               defaults {:notes nil}]
           (sql/cmd-create-or-update-version!
             (merge defaults version {:id               version_id
@@ -201,9 +232,9 @@
 (defn approve-version! [{:keys [application_id version_id approval]} request db]
   (if-let [application (load-application application_id db)]
     (do
-      (u/require-internal-team (:team_id application) request)
+      (require-write-authorization request (:team_id application))
       (let [defaults {:notes nil}
-            uid (get-in request [:tokeninfo "uid"])]
+            uid (from-token request "uid")]
         (sql/cmd-approve-version!
           (merge defaults approval {:version_id     version_id
                                     :application_id application_id

@@ -1,7 +1,8 @@
 (ns org.zalando.stups.kio.api-test
   (:require [clojure.test :refer :all]
             [org.zalando.stups.kio.sql :as sql]
-            [org.zalando.stups.kio.api :as api]))
+            [org.zalando.stups.kio.api :as api]
+            [org.zalando.stups.friboo.user :as fuser]))
 
 (deftest test-the-tester
   "I succeed"
@@ -65,3 +66,76 @@
            (catch Exception e (is (-> (ex-data e)
                                       (get :http-code)
                                       (= 403))))))))
+
+(deftest test-write-auth-service-no-realm-not-ok
+  "If the realm is missing it should not get access."
+  (let [request {:tokeninfo {"uid" "stups_robot"
+                             "scope" ["uid" "application.write_all"]}
+                 :configuration {:allowed-uids "stups_robot,foo"}}]
+    (try (do
+           (api/require-write-authorization request "stups")
+           (is false))
+      (catch Exception e))))
+
+(deftest test-write-auth-service-no-uid-not-ok
+  "If the uid is missing it should not get access."
+  (let [request {:tokeninfo {"realm" "/services"
+                             "scope" ["uid" "application.write_all"]}
+                 :configuration {:allowed-uids "stups_robot,foo"}}]
+    (try (do
+           (api/require-write-authorization request "stups")
+           (is false))
+      (catch Exception e))))
+
+(deftest test-write-auth-service-ok
+  "If a service has necessary scope and uid it should get access."
+  (let [request {:tokeninfo {"uid" "stups_robot"
+                             "realm" "/services"
+                             "scope" ["uid" "application.write_all"]}
+                 :configuration {:allowed-uids "stups_robot,foo"}}]
+    (api/require-write-authorization request "stups")))
+
+(deftest test-write-auth-service-not-ok1
+  "If a service doesn't have the scope it should not get access."
+  (let [request {:tokeninfo {"uid" "stups_robot"
+                             "realm" "/services"
+                             "scope" ["uid"]}
+                 :configuration {:allowed-uids "stups_robot,foo"}}]
+    (try (do
+           (api/require-write-authorization request "stups")
+           (is false))
+      (catch Exception e))))
+
+(deftest test-write-auth-service-not-ok2
+  "If a service doesn't have the correct uid it should not get access."
+  (let [request {:tokeninfo {"uid" "stups_robot"
+                             "realm" "/services"
+                             "scope" ["uid" "application.write_all"]}
+                 :configuration {:allowed-uids "bar,foo"}}]
+    (try (do
+           (api/require-write-authorization request "stups")
+           (is false))
+      (catch Exception e))))
+
+(deftest test-write-auth-employee-specific-team-ok
+  "A user has to be in the correct team"
+  (let [request {:tokeninfo {"uid" "npiccolotto"
+                             "realm" "/employees"
+                             "scope" ["uid"]}
+                 :configuration {:team-service-url "http://example.com"}}]
+    (with-redefs [fuser/get-teams (constantly [{:name "stups"} {:name "asa"}])
+                  fuser/require-internal-user (constantly nil)]
+      (api/require-write-authorization request "stups"))))
+
+(deftest test-write-auth-employee-specific-team-not-ok
+  "A user has to be in the correct team"
+  (let [request {:tokeninfo {"uid" "npiccolotto"
+                             "realm" "/employees"
+                             "scope" ["uid"]}
+                 :configuration {:team-service-url "http://example.com"}}]
+    (with-redefs [fuser/get-teams (constantly [{:name "test"} {:name "asa"}])
+                  fuser/require-internal-user (constantly nil)]
+      (try (do
+             (api/require-write-authorization request "stups")
+             (is false))
+        (catch Exception e)))))
