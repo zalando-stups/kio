@@ -1,4 +1,4 @@
-(defproject org.zalando.stups/kio "0.24.0-SNAPSHOT"
+(defproject org.zalando.stups/kio "0.24.1-SNAPSHOT"
   :description "The application registry."
   :url "https://github.com/zalando-stups/kio"
 
@@ -8,7 +8,7 @@
   :min-lein-version "2.0.0"
 
   :dependencies [[org.clojure/clojure "1.7.0"]
-                 [org.zalando.stups/friboo "1.4.0"]
+                 [org.zalando.stups/friboo "1.4.1"]
                  [clj-time "0.11.0"]
                  [yesql "0.5.0"]]
 
