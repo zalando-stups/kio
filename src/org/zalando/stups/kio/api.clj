@@ -50,14 +50,18 @@
       (api/throw-error 403 "Unauthorized"))))
 
 (defn- require-service-authorization
-  [request]
-  ; we have to limit which robots access it for now
-  (require-special-uid request)
-  ; and check that they have the correct scope
-  (when-not (some #(= % "application.write_all")
-                  (from-token request "scope"))
-    (log/warn "ACCESS DENIED (unauthorized) because insufficient scopes.")
-    (api/throw-error 403 "Unauthorized")))
+  "Checks whether service user has correct scope and team membership"
+  [team request]
+  (let [has-scope? (set (from-token request "scope"))]
+    (when-not (or (has-scope? "application.write_all")
+                  (has-scope? "application.write"))
+      (log/warn "ACCESS DENIED (unauthorized) because insufficient scopes.")
+      (api/throw-error 403 "Unauthorized"))
+    (when (has-scope? "application.write_all")
+      ; we have to limit which robots access can do that for now
+      (require-special-uid request))
+    (when (has-scope? "application.write")
+      (u/require-service-team team request))))
 
 (defn require-uid
   "Checks whether uid is present on token, throws 403 otherwise"
@@ -68,13 +72,13 @@
 
 (defn require-write-authorization
   "If user is employee, check that is in correct team.
-   If user is service, check that it has application_write.all scope"
+   If user is service, check that it has application_write.all scope OR has application.write and is correct team"
   [request team]
   (require-uid request)
   (u/require-internal-user request)
   (let [realm (from-token request "realm")]
     (when (= realm "/services")
-      (require-service-authorization request))
+      (require-service-authorization team request))
     (when (= realm "/employees")
       (u/require-internal-team team request))))
 
@@ -232,7 +236,7 @@
 (defn approve-version! [{:keys [application_id version_id approval]} request db]
   (if-let [application (load-application application_id db)]
     (do
-      (require-write-authorization request (:team_id application))
+      (u/require-internal-team (:team_id application) request)
       (let [defaults {:notes nil}
             uid (from-token request "uid")]
         (sql/cmd-approve-version!
