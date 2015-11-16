@@ -222,7 +222,7 @@ paths:
       tags:
       - Applications
       security:
-      - oauth2: [uid, application.write]
+      - oauth2: [uid]
       operationId: "org.zalando.stups.kio.api/create-or-update-application!"
       parameters:
       - $ref: '#/parameters/ApplicationID'
@@ -392,7 +392,7 @@ paths:
       tags:
       - Versions
       security:
-      - oauth2: [uid, application.write]
+      - oauth2: [uid]
       operationId: "org.zalando.stups.kio.api/create-or-update-version!"
       parameters:
       - $ref: '#/parameters/ApplicationID'
@@ -465,7 +465,7 @@ paths:
       description: |
         Approves a version.
       security:
-      - oauth2: [uid, application.write]
+      - oauth2: [uid]
       tags:
       - Approvals
       operationId: "org.zalando.stups.kio.api/approve-version!"
@@ -632,4 +632,3 @@ securityDefinitions:
     authorizationUrl: https://example.com/oauth2/dialog
     scopes:
       uid: Unique identifier of the user accessing the service.
-      application.write: Grants service users write access to their teams applications. Not used for humans.
