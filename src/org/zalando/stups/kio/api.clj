@@ -76,10 +76,12 @@
   [request team]
   (require-uid request)
   (u/require-internal-user request)
-  (let [realm (from-token request "realm")]
-    (when (= realm "/services")
+  (let [service-realm? #{"services" "/services"}
+        employee-realm? #{"employees" "/employees"}
+        realm (from-token request "realm")]
+    (when (service-realm? realm)
       (require-service-authorization team request))
-    (when (= realm "/employees")
+    (when (employee-realm? realm)
       (u/require-internal-team team request))))
 
 ;; applications
