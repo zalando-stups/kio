@@ -3,6 +3,7 @@
             [org.zalando.stups.kio.sql :as sql]
             [org.zalando.stups.kio.api :as api]
             [org.zalando.stups.friboo.user :as fuser]
+            [org.zalando.stups.kio.test-utils :as util]
             [clojure.java.jdbc :as jdbc]))
 
 (deftest test-the-tester
@@ -67,6 +68,42 @@
            (catch Exception e (is (-> (ex-data e)
                                       (get :http-code)
                                       (= 403))))))))
+
+(deftest test-search
+
+  (testing "it should trim the search and replace any whitespaces in between with a pipe"
+    (let [calls (atom {})
+          params {:search "  this     is  a search   "}]
+      (with-redefs [fuser/require-internal-user (constantly nil)
+                    sql/cmd-search-applications (util/track calls :search)]
+        (api/read-applications params nil nil)
+        (util/same! 1 (count (:search @calls)))
+        (util/same! "this | is | a | search"
+                    (-> @calls
+                        :search
+                        ; first call
+                        first
+                        ; first argument = parameters
+                        first
+                        ; search param
+                        :searchquery)))))
+
+  (testing "it should not affect queries without whitespace"
+    (let [calls (atom {})
+          params {:search "alsoasearch"}]
+      (with-redefs [fuser/require-internal-user (constantly nil)
+                    sql/cmd-search-applications (util/track calls :search)]
+        (api/read-applications params nil nil)
+        (util/same! 1 (count (:search @calls)))
+        (util/same! "alsoasearch"
+                    (-> @calls
+                        :search
+                        ; first call
+                        first
+                        ; first argument = parameters
+                        first
+                        ; search param
+                        :searchquery))))))
 
 (deftest test-require-write-access
 
