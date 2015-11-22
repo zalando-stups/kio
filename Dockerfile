@@ -11,5 +11,4 @@ ENV HTTP_PORT=8080
 CMD java $JAVA_OPTS $(java-dynamic-memory-opts) $(newrelic-agent) $(appdynamics-agent) -jar /kio.jar
 
 COPY target/kio.jar /
-
-ADD /scm-source.json /scm-source.json
+COPY target/scm-source.json /scm-source.json
