@@ -90,7 +90,10 @@
   [{:keys [search modified_before modified_after]} request db]
   (u/require-internal-user request)
   (let [conn {:connection db}
-        params {:searchquery     search
+        params {:searchquery     (-> search
+                                     str/trim
+                                     (str/replace #" " "|")
+                                     (str/replace #"\|+" " | "))
                 :modified_before (tcoerce/to-sql-time modified_before)
                 :modified_after  (tcoerce/to-sql-time modified_after)}]
     (if (nil? search)
