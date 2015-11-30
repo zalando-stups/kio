@@ -88,6 +88,15 @@
                         ; search param
                         :searchquery)))))
 
+  (testing "it should not affect queries without searches"
+    (let [calls (atom {})
+          params {}]
+      (with-redefs [fuser/require-internal-user (constantly nil)
+                    sql/cmd-read-applications (constantly nil)
+                    sql/cmd-search-applications (util/track calls :search)]
+        ; succeeds when it doesn't throw
+        (api/read-applications params nil nil))))
+
   (testing "it should not affect queries without whitespace"
     (let [calls (atom {})
           params {:search "alsoasearch"}]
