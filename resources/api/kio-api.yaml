@@ -58,7 +58,7 @@ paths:
           type: string
           format: date-time
           required: false
-        - name: team
+        - name: team_id
           in: query
           description: "Only include apps of this team"
           type: string

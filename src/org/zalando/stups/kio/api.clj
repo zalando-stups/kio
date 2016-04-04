@@ -87,7 +87,7 @@
 ;; applications
 
 (defn read-applications
-  [{:keys [search modified_before modified_after team active]} request db]
+  [{:keys [search modified_before modified_after team_id active]} request db]
   (u/require-internal-user request)
   (let [conn {:connection db}
         params {:searchquery    (when search
@@ -95,7 +95,7 @@
                                       str/trim
                                       (str/replace #" " "|")
                                       (str/replace #"\|+" " | ")))
-                :team team
+                :team_id team_id
                 :active active
                 :modified_before (tcoerce/to-sql-time modified_before)
                 :modified_after  (tcoerce/to-sql-time modified_after)}]
