@@ -58,6 +58,16 @@ paths:
           type: string
           format: date-time
           required: false
+        - name: team
+          in: query
+          description: "Only include apps of this team"
+          type: string
+          required: false
+        - name: active
+          in: query
+          description: "If true, include only active apps"
+          type: boolean
+          required: false
       responses:
         200:
           description: List of all applications
@@ -74,6 +84,10 @@ paths:
                   type: string
                   description: ID of the team, responsible for this application
                   example: stups
+                active:
+                  type: boolean
+                  description: If this appliation is active, ie gets credentials
+                  example: true
                 name:
                   type: string
                   description: A human-readable name of the application

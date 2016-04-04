@@ -11,7 +11,9 @@ SELECT a_id,
        a_last_modified
   FROM zk_data.application
  WHERE a_last_modified <= COALESCE(:modified_before, a_last_modified)
-   AND a_last_modified >= COALESCE(:modified_after, a_last_modified);
+   AND a_last_modified >= COALESCE(:modified_after, a_last_modified)
+   AND a_active = COALESCE(:active, a_active)
+   AND a_team_id = COALESCE(:team, a_team_id);
 
 -- name: search-applications
   SELECT a_id,
@@ -43,7 +45,9 @@ SELECT a_id,
                    as vector
             FROM zk_data.application
            WHERE a_last_modified <= COALESCE(:modified_before, a_last_modified)
-             AND a_last_modified >= COALESCE(:modified_after, a_last_modified)) as apps,
+             AND a_last_modified >= COALESCE(:modified_after, a_last_modified)
+             AND a_team_id = COALESCE(:team, a_team_id)
+             AND a_active = COALESCE(:active, a_active)) as apps,
                  to_tsquery('simple', :searchquery) query
    WHERE query @@ vector
 ORDER BY a_matched_rank DESC;
