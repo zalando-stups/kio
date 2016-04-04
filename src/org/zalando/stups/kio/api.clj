@@ -1,3 +1,4 @@
+
 ; Copyright 2015 Zalando SE
 ;
 ; Licensed under the Apache License, Version 2.0 (the "License")
@@ -88,7 +89,7 @@
 
 (defn read-applications
   [{:keys [search modified_before modified_after]} request db]
-  (u/require-internal-user request)
+  (u/require-realms #{"employees" "services"} request)
   (let [conn {:connection db}
         params {:searchquery    (when search
                                   (-> search
