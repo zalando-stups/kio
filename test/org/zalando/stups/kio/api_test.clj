@@ -120,7 +120,31 @@
       (with-redefs [sql/cmd-read-applications (constantly [])
                     sql/cmd-search-applications (constantly [])]
         (api/read-applications nil request nil)
-        (api/read-applications {:search "foo bar"} request nil)))))
+        (api/read-applications {:search "foo bar"} request nil))))
+
+  (testing "people without a team should read a single app"
+    (let [request {:tokeninfo {"uid" "nikolaus"
+                               "realm" "employees"}}]
+      (with-redefs [sql/cmd-read-application (constantly {})]
+        (api/read-application nil request nil))))
+
+  (testing "people without a team should read versions"
+    (let [request {:tokeninfo {"uid" "nikolaus"
+                               "realm" "employees"}}]
+      (with-redefs [sql/cmd-read-versions-by-application (constantly [])]
+        (api/read-versions-by-application nil request nil))))
+
+  (testing "people without a team should read a single version"
+    (let [request {:tokeninfo {"uid" "nikolaus"
+                               "realm" "employees"}}]
+      (with-redefs [sql/cmd-read-version-by-application (constantly {})]
+        (api/read-version-by-application nil request nil))))
+
+  (testing "people without a team should read a single version"
+    (let [request {:tokeninfo {"uid" "nikolaus"
+                               "realm" "employees"}}]
+      (with-redefs [sql/read-approvals-by-version (constantly {})]
+        (api/read-approvals-by-version nil request nil)))))
 
 (deftest test-require-write-access
 
