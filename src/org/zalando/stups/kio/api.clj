@@ -1,3 +1,4 @@
+
 ; Copyright 2015 Zalando SE
 ;
 ; Licensed under the Apache License, Version 2.0 (the "License")
@@ -88,7 +89,7 @@
 
 (defn read-applications
   [{:keys [search modified_before modified_after team_id active]} request db]
-  (u/require-internal-user request)
+  (u/require-realms #{"employees" "services"} request)
   (let [conn {:connection db}
         params {:searchquery    (when search
                                   (-> search
@@ -133,7 +134,7 @@
   (map enrich-application applications))
 
 (defn read-application [{:keys [application_id]} request db]
-  (u/require-internal-user request)
+  (u/require-realms #{"employees" "services"} request)
   (log/debug "Read application %s." application_id)
   (-> (sql/cmd-read-application
         {:id application_id}
@@ -187,7 +188,7 @@
 ;; versions
 
 (defn read-versions-by-application [{:keys [application_id]} request db]
-  (u/require-internal-user request)
+  (u/require-realms #{"employees" "services"} request)
   (log/debug "Read all versions for application %s." application_id)
   (-> (sql/cmd-read-versions-by-application
         {:application_id application_id}
@@ -197,7 +198,7 @@
       (content-type-json)))
 
 (defn read-version-by-application [{:keys [application_id version_id]} request db]
-  (u/require-internal-user request)
+  (u/require-realms #{"employees" "services"} request)
   (log/debug "Read version %s of application %s." version_id application_id)
   (-> (sql/cmd-read-version-by-application
         {:id             version_id
@@ -231,7 +232,7 @@
 ;; approvals
 
 (defn read-approvals-by-version [{:keys [application_id version_id]} request db]
-  (u/require-internal-user request)
+  (u/require-realms #{"employees" "services"} request)
   (log/debug "Read approvals for version %s of application %s." version_id application_id)
   (-> (sql/cmd-read-approvals-by-version
         {:version_id     version_id
