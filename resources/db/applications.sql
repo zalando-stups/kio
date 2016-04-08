@@ -52,7 +52,7 @@ SELECT a_id,
              AND a_last_modified >= COALESCE(:modified_after, a_last_modified)
              AND a_team_id = COALESCE(:team_id, a_team_id)
              AND a_active = COALESCE(:active, a_active)) as apps,
-                 plainto_tsquery('english', coalesce(:searchquery, '')) query
+                 plainto_tsquery('english', COALESCE(:searchquery, '')) query
    WHERE query @@ vector
 ORDER BY a_matched_rank DESC;
 
