@@ -27,7 +27,10 @@ SELECT a_id,
          a_specification_url,
          a_last_modified,
          ts_rank_cd(vector, query) AS a_matched_rank,
-         ts_headline('english', a_id || a_name || COALESCE(a_subtitle, '') || COALESCE(a_description, ''), query) AS a_matched_description
+         ts_headline('english', a_id || ' ' ||
+                                a_name || ' ' ||
+                                COALESCE(a_subtitle, '') || ' ' ||
+                                COALESCE(a_description, ''), query) AS a_matched_description
     FROM (SELECT a_id,
                  a_team_id,
                  a_active,
