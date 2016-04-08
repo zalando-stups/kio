@@ -27,7 +27,7 @@ SELECT a_id,
          a_specification_url,
          a_last_modified,
          ts_rank_cd(vector, query) AS a_matched_rank,
-         ts_headline('simple', a_description, query) AS a_matched_description
+         ts_headline('english', a_id || a_name || COALESCE(a_subtitle, '') || COALESCE(a_description, ''), query) AS a_matched_description
     FROM (SELECT a_id,
                  a_team_id,
                  a_active,
@@ -39,16 +39,17 @@ SELECT a_id,
                  a_specification_url,
                  a_last_modified,
                  a_description,
-                 setweight(to_tsvector('simple', a_name), 'A')
-                 || setweight(to_tsvector('simple', COALESCE(a_subtitle, '')), 'B')
-                 || setweight(to_tsvector('simple', COALESCE(a_description, '')), 'C')
+                 setweight(to_tsvector('english', a_id), 'A')
+                 || setweight(to_tsvector('english', a_name), 'B')
+                 || setweight(to_tsvector('english', COALESCE(a_subtitle, '')), 'C')
+                 || setweight(to_tsvector('english', COALESCE(a_description, '')), 'D')
                    as vector
             FROM zk_data.application
            WHERE a_last_modified <= COALESCE(:modified_before, a_last_modified)
              AND a_last_modified >= COALESCE(:modified_after, a_last_modified)
              AND a_team_id = COALESCE(:team_id, a_team_id)
              AND a_active = COALESCE(:active, a_active)) as apps,
-                 to_tsquery('simple', :searchquery) query
+                 plainto_tsquery('english', :searchquery) query
    WHERE query @@ vector
 ORDER BY a_matched_rank DESC;
 
