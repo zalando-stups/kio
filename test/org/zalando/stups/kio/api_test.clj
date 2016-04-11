@@ -31,49 +31,6 @@
         approvers (:required_approvers (api/enrich-application app))]
     (is (= 2 approvers))))
 
-(deftest test-search
-
-  (testing "it should trim the search and replace any whitespaces in between with a pipe"
-    (let [calls (atom {})
-          params {:search "  this     is  a search   "}]
-      (with-redefs [fuser/require-realms (constantly nil)
-                    sql/cmd-search-applications (util/track calls :search)]
-        (api/read-applications params nil nil)
-        (util/same! 1 (count (:search @calls)))
-        (util/same! "this | is | a | search"
-                    (-> @calls
-                        :search
-                        ; first call
-                        first
-                        ; first argument = parameters
-                        first
-                        ; search param
-                        :searchquery)))))
-
-  (testing "it should not affect queries without searches"
-    (with-redefs [fuser/require-realms (constantly nil)
-                  sql/cmd-read-applications (constantly nil)
-                  sql/cmd-search-applications (constantly nil)]
-        ; succeeds when it doesn't throw
-        (api/read-applications {} nil nil)))
-
-  (testing "it should not affect queries without whitespace"
-    (let [calls (atom {})
-          params {:search "alsoasearch"}]
-      (with-redefs [fuser/require-realms (constantly nil)
-                    sql/cmd-search-applications (util/track calls :search)]
-        (api/read-applications params nil nil)
-        (util/same! 1 (count (:search @calls)))
-        (util/same! "alsoasearch"
-                    (-> @calls
-                        :search
-                        ; first call
-                        first
-                        ; first argument = parameters
-                        first
-                        ; search param
-                        :searchquery))))))
-
 (deftest test-read-access
 
   (testing "people without a team should read applications"
