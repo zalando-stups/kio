@@ -163,17 +163,6 @@
     (log/audit "Created/updated application %s using data %s." application_id application)
     (response nil)))
 
-(defn update-application-criticality! [{:keys [application_id criticality]} request db]
-  (let [uid (from-token request "uid" "no_uid_available")]
-    (if (load-application application_id db)
-      (do (require-special-uid request)
-          (sql/update-application-criticality! (merge criticality {:last_modified_by uid
-                                                                   :id               application_id})
-                                               {:connection db})
-          (log/audit "Updated criticality of application %s using data %s." application_id criticality)
-          (response nil))
-      (not-found nil))))
-
 (defn read-application-approvals [{:keys [application_id]} request db]
   (u/require-internal-user request)
   (log/debug "Read all approvals for application %s." application_id)

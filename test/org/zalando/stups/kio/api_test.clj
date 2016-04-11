@@ -31,44 +31,6 @@
         approvers (:required_approvers (api/enrich-application app))]
     (is (= 2 approvers))))
 
-(deftest test-update-application-criticality1
-  "If the application does not exist, it should not call update and return 404"
-  (let [calls (atom 0)
-        criticality nil
-        request nil
-        db nil]
-    (with-redefs [api/load-application (constantly nil)
-                  sql/update-application-criticality! (fn [] (swap! calls inc))]
-      (let [response (api/update-application-criticality! criticality request db)]
-        (is (= @calls 0))
-        (is (= 404 (:status response)))))))
-
-(deftest test-update-application-criticality2
-  "If the application does exist, it should check for special uids"
-  (let [request {:tokeninfo {"uid" "npiccolotto"}
-                 :configuration {:allowed-uids "npiccolotto"}}
-        db nil
-        criticality nil]
-    (with-redefs [api/load-application (constantly {:id "kio"})
-                  sql/update-application-criticality! (constantly 1)]
-      (is (-> (api/update-application-criticality! criticality request db)
-              (get :status)
-              (= 200))))))
-
-(deftest test-update-application-criticality3
-  "If the application does exist it should return 403 if special uids do not match"
-  (let [request {:tokeninfo {"uid" "npiccolotto"}
-                 :configuration {:allowed-uids "foo,bar"}}
-        db nil
-        criticality nil]
-    (with-redefs [api/load-application (constantly {:id "kio"})
-                  sql/update-application-criticality! (constantly 1)]
-      (try (do (api/update-application-criticality! criticality request db)
-               (is false))
-           (catch Exception e (is (-> (ex-data e)
-                                      (get :http-code)
-                                      (= 403))))))))
-
 (deftest test-search
 
   (testing "it should trim the search and replace any whitespaces in between with a pipe"
