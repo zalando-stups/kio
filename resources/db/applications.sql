@@ -92,7 +92,8 @@ WITH application_update AS (
             a_specification_type  = :specification_type,
             a_last_modified       = NOW(),
             a_last_modified_by    = :last_modified_by,
-            a_publicly_accessible = :publicly_accessible
+            a_publicly_accessible = :publicly_accessible,
+            a_criticality_level   = :criticality_level
       WHERE a_id = :id
   RETURNING *)
 INSERT INTO zk_data.application (
@@ -109,7 +110,8 @@ INSERT INTO zk_data.application (
             a_specification_type,
             a_created_by,
             a_last_modified_by,
-            a_publicly_accessible)
+            a_publicly_accessible,
+            a_criticality_level)
      SELECT :id,
             :team_id,
             :active,
@@ -123,12 +125,13 @@ INSERT INTO zk_data.application (
             :specification_type,
             :created_by,
             :last_modified_by,
-            :publicly_accessible
+            :publicly_accessible,
+            :criticality_level
       WHERE NOT EXISTS (SELECT * FROM application_update);
 
 -- name: update-application-criticality!
 UPDATE zk_data.application
-   SET a_criticality_level = :criticality_level,
+   SET
        a_last_modified = NOW(),
        a_last_modified_by = :last_modified_by
  WHERE a_id = :id;

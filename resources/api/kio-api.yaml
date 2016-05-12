@@ -272,29 +272,6 @@ paths:
         default:
           $ref: '#/responses/Error'
 
-  '/apps/{application_id}/criticality':
-    put:
-      summary: update criticality level
-      description: |
-        Updates criticality level of an application.
-      tags:
-        - Applications
-      operationId: 'org.zalando.stups.kio.api/update-application-criticality!'
-      parameters:
-      - $ref: '#/parameters/ApplicationID'
-      - name: criticality
-        in: body
-        description: Criticality level that will be saved.
-        schema:
-          '$ref': '#/definitions/StoreApplicationCriticality'
-      responses:
-        200:
-          description: Updated successfully
-        404:
-          description: Not found
-        default:
-          $ref: '#/responses/Error'
-
   # versions
 
   '/apps/{application_id}/versions':
@@ -564,6 +541,13 @@ definitions:
         type: string
         description: URL of the specification tool
         example: https://github.com/zalando-stups/kio/issues
+      criticality_level:
+        description: Criticality level of an application
+        type: integer
+        minimum: 1 # low
+        maximum: 3 # high
+        default: 2 # medium
+        example: 2
       required_approvers:
         type: integer
         minimum: 1
@@ -586,19 +570,6 @@ definitions:
       - team_id
       - active
       - name
-
-  StoreApplicationCriticality:
-    type: object
-    properties:
-      criticality_level:
-          description: Criticality level of an application
-          type: integer
-          minimum: 1
-          maximum: 3
-          default: 2
-          example: 2
-    required:
-      - criticality_level
 
   StoreVersion:
     type: object
