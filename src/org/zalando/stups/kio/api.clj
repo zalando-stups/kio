@@ -149,12 +149,13 @@
                   :service_url         nil
                   :description         nil
                   :specification_type  nil
-                  :publicly_accessible false}]
+                  :publicly_accessible false
+                  :criticality_level   2}]
     (require-write-authorization request (:team_id application))
     (sql/cmd-create-or-update-application!
-      (merge defaults application {:id               application_id
-                                   :last_modified_by uid
-                                   :created_by       uid})
+      (merge-with #(or %2 %1) defaults application {:id               application_id
+                                                    :last_modified_by uid
+                                                    :created_by       uid})
       {:connection db})
     (log/audit "Created/updated application %s using data %s." application_id application)
     (response nil)))
