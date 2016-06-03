@@ -19,6 +19,7 @@
             [org.zalando.stups.friboo.ring :refer :all]
             [org.zalando.stups.friboo.log :as log]
             [org.zalando.stups.friboo.user :as u]
+            [org.zalando.stups.friboo.auth :as auth]
             [org.zalando.stups.kio.sql :as sql]
             [clj-time.coerce :as tcoerce]
             [io.sarnowski.swagger1st.util.api :as api]
@@ -50,20 +51,6 @@
       (log/warn "ACCESS DENIED (unauthorized) because not a special user.")
       (api/throw-error 403 "Unauthorized"))))
 
-(defn- require-service-authorization
-  "Checks whether service user has correct scope and team membership"
-  [team request]
-  (let [has-scope? (set (from-token request "scope"))]
-    (when-not (or (has-scope? "application.write_all")
-                  (has-scope? "application.write"))
-      (log/warn "ACCESS DENIED (unauthorized) because insufficient scopes.")
-      (api/throw-error 403 "Unauthorized"))
-    (when (has-scope? "application.write_all")
-      ; we have to limit which robots access can do that for now
-      (require-special-uid request))
-    (when (has-scope? "application.write")
-      (u/require-service-team team request))))
-
 (defn require-uid
   "Checks whether uid is present on token, throws 403 otherwise"
   [request]
@@ -76,14 +63,21 @@
    If user is service, check that it has application_write.all scope OR has application.write and is correct team"
   [request team]
   (require-uid request)
-  (u/require-internal-user request)
-  (let [service-realm? #{"services" "/services"}
-        employee-realm? #{"employees" "/employees"}
-        realm (from-token request "realm")]
-    (when (service-realm? realm)
-      (require-service-authorization team request))
-    (when (employee-realm? realm)
-      (u/require-internal-team team request))))
+  (let [has-auth? (auth/get-auth request team)
+        realm (from-token request "realm")
+        is-robot? (= "/services" realm)
+        is-human? (= "/employees" realm)
+        has-scope? (set (from-token request "scope"))]
+    (if is-human?
+      (when-not has-auth?
+        (api/throw-error 403 "Unauthorized")))
+    (if is-robot?
+      (if-not (has-scope? "application.write_all")
+        (when-not (and
+                    (has-scope? "application.write")
+                    has-auth?)
+          (api/throw-error 403 "Unauthorized"))
+        (require-special-uid request)))))
 
 ;; applications
 
