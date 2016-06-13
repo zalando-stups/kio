@@ -1,15 +1,26 @@
 (ns org.zalando.stups.kio.api-test
   (:require [clojure.test :refer :all]
+            [org.zalando.stups.kio.core :refer [run]]
             [org.zalando.stups.kio.sql :as sql]
             [org.zalando.stups.kio.api :as api]
             [org.zalando.stups.friboo.user :as fuser]
             [org.zalando.stups.friboo.auth :as auth]
+            [clj-http.client :as client]
+            [cheshire.core :as json]
             [org.zalando.stups.kio.test-utils :as util]
-            [clojure.java.jdbc :as jdbc]))
+            [clojure.java.jdbc :as jdbc]
+            [com.stuartsierra.component :as component]))
 
 (deftest test-the-tester
   "I succeed"
   (is true))
+
+(def base-url "http://localhost:8080")
+
+(defn api-url [& path]
+  (let [url (apply str base-url path)]
+    (println (str "[request] " url))
+    url))
 
 (deftest test-load-app
   "Test db mocking"
@@ -31,6 +42,47 @@
   (let [app {:criticality_level 3}
         approvers (:required_approvers (api/enrich-application app))]
     (is (= 2 approvers))))
+
+(deftest test-create-versions-using-api
+  (with-redefs [api/require-write-authorization (constantly true)
+                api/from-token (constantly "barfoo")]
+    (let [system (run {})
+          request-options {:headers {:content-type "application/json"} :throw-exceptions false}
+          version {:notes "My new version" :artifact "docker://stups/foo1:1.0-master"}
+          version-data (assoc request-options :body (json/encode version))
+          application {:team_id "bar" :active true :name "FooBar"}
+          application-data (assoc request-options :body (json/encode application))
+          create-app-resp (client/put (api-url "/apps/foo1") application-data)]
+
+      (is (= (:status create-app-resp)
+             200)
+          (str "response of wrong status: " create-app-resp))
+
+      (testing "create a valid new version 1.0-master"
+        (let [response (client/put (api-url "/apps/foo1/versions/1.0-master") version-data)]
+          (is (= (:status response)
+                 200)
+              (str "response of wrong status: " response))))
+
+      (testing "create a valid new version 1.0"
+        (let [response (client/put (api-url "/apps/foo1/versions/1.0") version-data)]
+          (is (= (:status response)
+                 200)
+              (str "response of wrong status: " response))))
+
+      (testing "create a valid new version v1.0"
+        (let [response (client/put (api-url "/apps/foo1/versions/v1.0") version-data)]
+          (is (= (:status response)
+                 200)
+              (str "response of wrong status: " response))))
+
+      (testing "create a invalid new version"
+        (let [response (client/put (api-url "/apps/foo1/versions/1..-..1") version-data)]
+          (is (= (:status response)
+                 400)
+              (str "response of wrong status: " response))))
+
+      (component/stop system))))
 
 (deftest test-read-access
 
