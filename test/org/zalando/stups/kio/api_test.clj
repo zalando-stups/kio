@@ -43,7 +43,7 @@
         approvers (:required_approvers (api/enrich-application app))]
     (is (= 2 approvers))))
 
-#_(deftest test-create-versions-using-api
+(deftest test-create-versions-using-api
   (with-redefs [api/require-write-authorization (constantly true)
                 api/from-token (constantly "barfoo")]
     (let [system (run {})
