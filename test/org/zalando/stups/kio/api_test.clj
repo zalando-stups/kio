@@ -118,6 +118,37 @@
       (with-redefs [sql/read-approvals-by-version (constantly {})]
         (api/read-approvals-by-version nil request nil)))))
 
+(deftest test-write-application
+  (testing "when updating application, the team in db should be compared"
+    (let [calls (atom {})]
+      (with-redefs [api/require-write-authorization (comp (constantly true)
+                                                          (util/track calls :auth))
+                    sql/cmd-create-or-update-application! (constantly nil)
+                    api/load-application (constantly {:team_id "db-team"})]
+          (api/create-or-update-application! {:application_id "test"
+                                              :application {:team_id "api-team"
+                                                            :active true
+                                                            :name "test"}}
+                                             {:tokeninfo {"uid" "nikolaus"
+                                                          "realm" "employees"}}
+                                             nil)
+          (is (= "db-team" (-> @calls :auth first second))))))
+
+  (testing "when creating application, the team in body should be compared"
+    (let [calls (atom {})]
+      (with-redefs [api/require-write-authorization (comp (constantly true)
+                                                          (util/track calls :auth))
+                    sql/cmd-create-or-update-application! (constantly nil)
+                    api/load-application (constantly nil)]
+        (api/create-or-update-application! {:application_id "test"
+                                            :application {:team_id "api-team"
+                                                          :active true
+                                                          :name "test"}}
+                                           {:tokeninfo {"uid" "nikolaus"
+                                                        "realm" "employees"}}
+                                           nil)
+        (is (= "api-team" (-> @calls :auth first second)))))))
+
 (deftest test-require-write-access
   (testing "a robot should not get access if the uid is missing"
     (let [request {:tokeninfo {"realm" "/services"
