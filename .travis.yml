@@ -1,4 +1,8 @@
 language: clojure
+services:
+  - postgresql
+before_script:
+  - psql -c 'create database kio;' -U postgres
 script:
   - lein clean
   - lein test
