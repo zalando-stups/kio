@@ -144,8 +144,13 @@
                   :description         nil
                   :specification_type  nil
                   :publicly_accessible false
-                  :criticality_level   2}]
-    (require-write-authorization request (:team_id application))
+                  :criticality_level   2}
+        existing_application (load-application application_id db)]
+
+    (if (nil? existing_application)
+      (require-write-authorization request (:team_id application))
+      (require-write-authorization request (:team_id existing_application)))
+
     (sql/cmd-create-or-update-application!
       (merge-with #(or %2 %1) defaults application {:id               application_id
                                                     :last_modified_by uid
