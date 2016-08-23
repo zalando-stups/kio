@@ -9,14 +9,14 @@
 
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [org.zalando.stups/friboo "1.9.0"]
-                 [clj-time "0.11.0"]
-                 [yesql "0.5.1"]]
+                 [clj-time "0.12.0"]
+                 [yesql "0.5.3"]]
 
   :main ^:skip-aot org.zalando.stups.kio.core
   :uberjar-name "kio.jar"
 
   :plugins [[io.sarnowski/lein-docker "1.1.0"]
-            [org.zalando.stups/lein-scm-source "0.1.0"]]
+            [org.zalando.stups/lein-scm-source "0.3.0"]]
 
   :docker {:image-name #=(eval (str (some-> (System/getenv "DEFAULT_DOCKER_REGISTRY")
                                                       (str "/"))
@@ -47,4 +47,5 @@
              :dev     {:repl-options {:init-ns user}
                        :source-paths ["dev"]
                        :dependencies [[org.clojure/tools.namespace "0.2.10"]
+                                      [midje "1.8.3"]
                                       [org.clojure/java.classpath "0.2.2"]]}})
