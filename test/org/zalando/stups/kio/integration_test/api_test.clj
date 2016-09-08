@@ -5,16 +5,24 @@
             [clj-http.client :as http]
             [cheshire.core :as json]
             [org.zalando.stups.kio.core :refer [run]]
-            [org.zalando.stups.kio.sql :as sql]
-            [org.zalando.stups.kio.api :as api]))
+            [org.zalando.stups.kio.api :as api]
+            [org.zalando.stups.friboo.system.oauth2 :as oauth2]))
 
 (defn api-url [& path]
   (let [url (apply str "http://localhost:8080" path)]
     (println (str "[request] " url))
     url))
 
-(deftest integration-test
+(defrecord NoTokenRefresher
+  [configuration]
+  com.stuartsierra.component/Lifecycle
+  (start [this] this)
+  (stop [this] this))
+
+(deftest ^:integration integration-test
   (with-redefs [api/require-write-authorization (constantly nil)
+                oauth2/map->OAUth2TokenRefresher map->NoTokenRefresher
+                oauth2/access-token (constantly "token")
                 api/from-token (constantly "barfoo")]
 
     (let [system          (run {})

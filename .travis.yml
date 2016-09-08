@@ -1,11 +1,8 @@
 language: clojure
-services:
-  - postgresql
-before_script:
-  - psql -c 'create database kio;' -U postgres
 script:
   - lein clean
   - lein test
+  - lein cloverage -e org.zalando.stups.kio.sql -e user --coveralls
   - lein uberjar
 jdk:
   - oraclejdk8

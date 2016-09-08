@@ -18,6 +18,8 @@
             [org.zalando.stups.friboo.system :as system]
             [org.zalando.stups.kio.sql :as sql]
             [org.zalando.stups.kio.api :as api]
+            [org.zalando.stups.friboo.system.oauth2 :as o2]
+            [org.zalando.stups.friboo.system.audit-logger.http :as http-logger]
             [org.zalando.stups.friboo.log :as log])
   (:gen-class))
 
@@ -25,13 +27,19 @@
   "Initializes and starts the whole system."
   [default-configuration]
   (let [configuration (config/load-configuration
-                        (system/default-http-namespaces-and :db)
+                        (system/default-http-namespaces-and :db :oauth2 :httplogger)
                         [sql/default-db-configuration
                          api/default-http-configuration
                          default-configuration])
 
-        system (system/http-system-map configuration api/map->API [:db]
-                                       :db (sql/map->DB {:configuration (:db configuration)}))]
+        system        (system/http-system-map configuration
+                        api/map->API [:db :http-audit-logger]
+                        :db (sql/map->DB {:configuration (:db configuration)})
+                        :http-audit-logger (using
+                                             (http-logger/map->HTTP {:configuration (:httplogger configuration)})
+                                             [:tokens])
+                        :tokens (o2/map->OAUth2TokenRefresher {:configuration (:oauth2 configuration)
+                                                               :tokens        {:http-audit-logger "uid"}}))]
 
     (system/run configuration system)))
 
