@@ -2,7 +2,7 @@ language: clojure
 script:
   - lein clean
   - lein test
-  - lein cloverage -e org.zalando.stups.kio.sql -e org.zalando.stups.kio.integration-test -e user --coveralls
+  - lein cloverage -e org.zalando.stups.kio.sql -e org.zalando.stups.kio.integration-test.api-test -e user --coveralls
   - lein uberjar
 jdk:
   - oraclejdk8
