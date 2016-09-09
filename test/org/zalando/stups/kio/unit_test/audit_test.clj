@@ -12,6 +12,7 @@
    :scm_url     "scm_url"
    :service_url "service_url"
    :team_id     "team_id"
+   :nil-value   nil
    :additional  "additional"})
 
 (def app-modified
@@ -27,7 +28,7 @@
       (:triggered_at app-modified) => #"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z"
       (:event_type app-modified) => (just {:namespace "internal"
                                            :name      "application-modified"
-                                           :version   "1"})
+                                           :version   "2"})
       (:triggered_by app-modified) => (just {:type       "USER"
                                              :id         "uid"
                                              :additional {:realm "realm"}}))
