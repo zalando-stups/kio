@@ -15,7 +15,7 @@
 
 (defn app-modified
   [tokeninfo app]
-  {:event_type   {:namespace "internal"
+  {:event_type   {:namespace "cloud.zalando.com"
                   :name      "application-modified"
                   :version   "2"}
    :triggered_at (get-date)
