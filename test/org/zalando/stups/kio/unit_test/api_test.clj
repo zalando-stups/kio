@@ -15,59 +15,60 @@
     (let [data (ex-data e)]
       (= status (:http-code data)))))
 
-(deftest enrich-application
+(deftest ^:unit enrich-application
   (facts "enrich-application"
     (fact "it properly sets required_approvers"
       (api/enrich-application {:criticality_level 1}) => (contains {:required_approvers 1})
       (api/enrich-application {:criticality_level 2}) => (contains {:required_approvers 2})
       (api/enrich-application {:criticality_level 3}) => (contains {:required_approvers 2}))))
 
-(deftest test-read-access
+(deftest ^:unit test-read-access
   (facts "people without a team can read stuff"
     (fact "applications without search"
-      (api/read-applications {} .request. .db.) =not=> (throws Exception)
+      (api/read-applications {} .request. .db. .logger.) =not=> (throws Exception)
       (provided
         .request. =contains=> {:tokeninfo {"uid"   "nikolaus"
                                            "realm" "employees"}}
         (sql/cmd-read-applications anything {:connection .db.}) => []))
     (fact "applications with search"
-      (api/read-applications .params. .request. .db.) =not=> (throws Exception)
+      (api/read-applications .params. .request. .db. .logger.) =not=> (throws Exception)
       (provided
         .request. =contains=> {:tokeninfo {"uid"   "nikolaus"
                                            "realm" "employees"}}
         .params. =contains=> {:search "foo bar"}
         (sql/cmd-search-applications anything {:connection .db.}) => []))
     (fact "single app"
-      (api/read-application nil .request. .db.) =not=> (throws Exception)
+      (api/read-application nil .request. .db. .logger.) =not=> (throws Exception)
       (provided
         .request. =contains=> {:tokeninfo {"uid"   "nikolaus"
                                            "realm" "employees"}}
         (sql/cmd-read-application anything {:connection .db.}) => {}))
 
     (fact "versions"
-      (api/read-versions-by-application nil .request. .db.) =not=> (throws Exception)
+      (api/read-versions-by-application nil .request. .db. .logger.) =not=> (throws Exception)
       (provided
         .request. =contains=> {:tokeninfo {"uid"   "nikolaus"
                                            "realm" "employees"}}
         (sql/cmd-read-versions-by-application anything {:connection .db.}) => {}))
     (fact "single version"
-      (api/read-version-by-application nil .request. .db.) =not=> (throws Exception)
+      (api/read-version-by-application nil .request. .db. .logger.) =not=> (throws Exception)
       (provided
         .request. =contains=> {:tokeninfo {"uid"   "nikolaus"
                                            "realm" "employees"}}
         (sql/cmd-read-version-by-application anything {:connection .db.}) => {}))
     (fact "approvals"
-      (api/read-approvals-by-version nil .request. .db.) =not=> (throws Exception)
+      (api/read-approvals-by-version nil .request. .db. .logger.) =not=> (throws Exception)
       (provided
         .request. =contains=> {:tokeninfo {"uid"   "nikolaus"
                                            "realm" "employees"}}
         (sql/cmd-read-approvals-by-version anything {:connection .db.}) => {}))))
 
-(deftest test-write-application
+(deftest ^:unit test-write-application
   (facts "writing applications"
     (fact "when updating application, the team in db is compared"
-      (api/create-or-update-application! .params. .request. .db.) =not=> (throws Exception)
+      (api/create-or-update-application! .params. .request. .db. .logger.) =not=> (throws Exception)
       (provided
+        .logger. =contains=> {:log-fn identity}
         .params. =contains=> {:application_id .app-id.
                               :application    {:team_id .api-team-id.
                                                :active  true
@@ -79,8 +80,9 @@
         (api/require-write-authorization .request. .db-team-id.) => nil))
 
     (fact "when creating application, the team in body is compared"
-      (api/create-or-update-application! .params. .request. .db.) =not=> (throws Exception)
+      (api/create-or-update-application! .params. .request. .db. .logger.) =not=> (throws Exception)
       (provided
+        .logger. =contains=> {:log-fn identity}
         .params. =contains=> {:application_id .app-id.
                               :application    {:team_id .api-team-id.
                                                :active  true
@@ -91,7 +93,7 @@
         (sql/cmd-create-or-update-application! anything {:connection .db.}) => nil
         (api/require-write-authorization .request. .api-team-id.) => nil))))
 
-(deftest test-require-write-access
+(deftest ^:unit test-require-write-access
   (facts "write access"
     (fact "a robot does not get access if the uid is missing"
       (api/require-write-authorization .request. .team.) => (throws Exception anything (with-status? 403))
@@ -150,8 +152,9 @@
         (auth/get-auth .request. .team.) => false))
 
     (fact "a robot can write applications"
-      (api/create-or-update-application! .params. .request. .db.) => (contains {:status 200})
+      (api/create-or-update-application! .params. .request. .db. .logger.) => (contains {:status 200})
       (provided
+        .logger. =contains=> {:log-fn identity}
         .request. =contains=> {:tokeninfo {"uid"   "robobro"
                                            "realm" "/services"
                                            "scope" ["uid" "application.write"]}}
@@ -164,7 +167,7 @@
         (sql/cmd-create-or-update-application! anything {:connection .db.}) => nil))
 
     (fact "a robot can write versions"
-      (api/create-or-update-version! .params. .request. .db.) =not=> (throws Exception)
+      (api/create-or-update-version! .params. .request. .db. .logger.) =not=> (throws Exception)
       (provided
         .params. =contains=> {:version        .version.
                               :version_id     .version-id.
@@ -180,7 +183,7 @@
         (jdbc/db-transaction* anything anything) => irrelevant))
 
     (fact "a robot can not write approvals"
-      (api/approve-version! .params. .request. .db.) => (throws Exception (with-status? 403))
+      (api/approve-version! .params. .request. .db. .logger.) => (throws Exception (with-status? 403))
       (provided
         .request. =contains=> {:tokeninfo     {"uid"   "robobro"
                                                "realm" "/services"
@@ -195,7 +198,7 @@
         (sql/cmd-approve-version! anything anything) => irrelevant :times 0))
 
     (fact "a human can write approvals"
-      (api/approve-version! .params. .request. .db.) =not=> (throws Exception)
+      (api/approve-version! .params. .request. .db. .logger.) =not=> (throws Exception)
       (provided
         .request. =contains=> {:tokeninfo     {"uid"   .uid.
                                                "realm" "/employees"

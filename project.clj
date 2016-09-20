@@ -8,7 +8,7 @@
   :min-lein-version "2.0.0"
 
   :dependencies [[org.clojure/clojure "1.8.0"]
-                 [org.zalando.stups/friboo "1.9.0"]
+                 [org.zalando.stups/friboo "1.10.0"]
                  [clj-time "0.12.0"]
                  [yesql "0.5.3"]]
 
@@ -16,11 +16,12 @@
   :uberjar-name "kio.jar"
 
   :plugins [[io.sarnowski/lein-docker "1.1.0"]
-            [org.zalando.stups/lein-scm-source "0.3.0"]]
+            [org.zalando.stups/lein-scm-source "0.3.0"]
+            [lein-cloverage "1.0.7-SNAPSHOT"]]
 
   :docker {:image-name #=(eval (str (some-> (System/getenv "DEFAULT_DOCKER_REGISTRY")
-                                                      (str "/"))
-                                              "stups/kio"))}
+                                      (str "/"))
+                                 "stups/kio"))}
 
   :release-tasks [["vcs" "assert-committed"]
                   ["clean"]
@@ -42,8 +43,11 @@
                   [:email "tobias.sarnowski@zalando.de"]
                   [:role "Maintainer"]]]
 
-  :profiles {:uberjar {:aot :all}
+  :test-selectors {:default     :unit
+                   :unit        :unit
+                   :integration :integration}
 
+  :profiles {:uberjar {:aot :all}
              :dev     {:repl-options {:init-ns user}
                        :source-paths ["dev"]
                        :dependencies [[org.clojure/tools.namespace "0.2.10"]

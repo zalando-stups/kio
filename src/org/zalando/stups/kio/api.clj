@@ -21,6 +21,7 @@
             [org.zalando.stups.friboo.user :as u]
             [org.zalando.stups.friboo.auth :as auth]
             [org.zalando.stups.kio.sql :as sql]
+            [org.zalando.stups.kio.audit :as audit]
             [clj-time.coerce :as tcoerce]
             [io.sarnowski.swagger1st.util.api :as api]
             [ring.util.response :refer :all]
@@ -28,16 +29,21 @@
             [clojure.java.jdbc :refer [with-db-transaction]]))
 
 ; define the API component and its dependencies
-(def-http-component API "api/kio-api.yaml" [db])
+(def-http-component API "api/kio-api.yaml" [db http-audit-logger])
 
 (def default-http-configuration
   {:http-port 8080})
 
+; TODO should be replaced with tokeninfo, but requires test changes
 (defn from-token
   [request field & return-default]
   (get-in request
           [:tokeninfo field]
           (when return-default return-default)))
+
+(defn tokeninfo
+  [request]
+  (clojure.walk/keywordize-keys (:tokeninfo request)))
 
 ; shameless copy from essentials
 (defn require-special-uid
@@ -82,7 +88,7 @@
 ;; applications
 
 (defn read-applications
-  [{:keys [search modified_before modified_after team_id active]} request db]
+  [{:keys [search modified_before modified_after team_id active]} request db _]
   (u/require-realms #{"employees" "services"} request)
   (let [conn {:connection db}
         params {:searchquery search
@@ -123,7 +129,7 @@
   [applications]
   (map enrich-application applications))
 
-(defn read-application [{:keys [application_id]} request db]
+(defn read-application [{:keys [application_id]} request db _]
   (u/require-realms #{"employees" "services"} request)
   (log/debug "Read application %s." application_id)
   (-> (sql/cmd-read-application
@@ -134,7 +140,7 @@
       (single-response)
       (content-type-json)))
 
-(defn create-or-update-application! [{:keys [application application_id]} request db]
+(defn create-or-update-application! [{:keys [application application_id]} request db {:keys [log-fn]}]
   (let [uid (from-token request "uid")
         defaults {:specification_url   nil
                   :documentation_url   nil
@@ -151,15 +157,19 @@
       (require-write-authorization request (:team_id application))
       (require-write-authorization request (:team_id existing_application)))
 
-    (sql/cmd-create-or-update-application!
-      (merge-with #(or %2 %1) defaults application {:id               application_id
-                                                    :last_modified_by uid
-                                                    :created_by       uid})
-      {:connection db})
+    (let [app-to-save (merge-with #(or %2 %1) defaults application {:id               application_id
+                                                                    :last_modified_by uid
+                                                                    :created_by       uid})]
+      (sql/cmd-create-or-update-application!
+        app-to-save
+        {:connection db})
+      (log-fn (audit/app-modified
+                (tokeninfo request)
+                app-to-save)))
     (log/audit "Created/updated application %s using data %s." application_id application)
     (response nil)))
 
-(defn read-application-approvals [{:keys [application_id]} request db]
+(defn read-application-approvals [{:keys [application_id]} request db _]
   (u/require-internal-user request)
   (log/debug "Read all approvals for application %s." application_id)
   (->> (sql/cmd-read-application-approvals
@@ -172,7 +182,7 @@
 
 ;; versions
 
-(defn read-versions-by-application [{:keys [application_id]} request db]
+(defn read-versions-by-application [{:keys [application_id]} request db _]
   (u/require-realms #{"employees" "services"} request)
   (log/debug "Read all versions for application %s." application_id)
   (-> (sql/cmd-read-versions-by-application
@@ -182,7 +192,7 @@
       (response)
       (content-type-json)))
 
-(defn read-version-by-application [{:keys [application_id version_id]} request db]
+(defn read-version-by-application [{:keys [application_id version_id]} request db _]
   (u/require-realms #{"employees" "services"} request)
   (log/debug "Read version %s of application %s." version_id application_id)
   (-> (sql/cmd-read-version-by-application
@@ -193,7 +203,7 @@
       (single-response)
       (content-type-json)))
 
-(defn create-or-update-version! [{:keys [application_id version_id version]} request db]
+(defn create-or-update-version! [{:keys [application_id version_id version]} request db _]
   (if-let [application (load-application application_id db)]
     (do
       (require-write-authorization request (:team_id application))
@@ -216,7 +226,7 @@
 
 ;; approvals
 
-(defn read-approvals-by-version [{:keys [application_id version_id]} request db]
+(defn read-approvals-by-version [{:keys [application_id version_id]} request db _]
   (u/require-realms #{"employees" "services"} request)
   (log/debug "Read approvals for version %s of application %s." version_id application_id)
   (-> (sql/cmd-read-approvals-by-version
@@ -227,7 +237,7 @@
       (response)
       (content-type-json)))
 
-(defn approve-version! [{:keys [application_id version_id approval]} request db]
+(defn approve-version! [{:keys [application_id version_id approval]} request db _]
   (if-let [application (load-application application_id db)]
     (do
       (u/require-internal-team (:team_id application) request)
