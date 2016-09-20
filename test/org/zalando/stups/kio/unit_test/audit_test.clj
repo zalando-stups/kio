@@ -25,7 +25,7 @@
                              :triggered_by anything
                              :event_type   anything
                              :payload      anything})
-      (:triggered_at app-modified) => #"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z"
+      (:triggered_at app-modified) => #"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z"
       (:event_type app-modified) => (just {:namespace "cloud.zalando.com"
                                            :name      "application-modified"
                                            :version   "2"})

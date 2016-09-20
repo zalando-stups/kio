@@ -3,7 +3,7 @@
             [clj-time.core :as t]))
 
 (def date-formatter
-  (tf/formatters :date-time-no-ms))
+  (tf/formatters :date-time))
 
 (defn get-date
   []
