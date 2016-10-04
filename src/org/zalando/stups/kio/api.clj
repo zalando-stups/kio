@@ -45,17 +45,26 @@
   [request]
   (clojure.walk/keywordize-keys (:tokeninfo request)))
 
-; shameless copy from essentials
-(defn require-special-uid
-  "Checks wether a given user is configured to be allowed to access this endpoint. Workaround for now."
-  [{:keys [configuration tokeninfo]}]
-  (let [allowed-uids (or (:allowed-uids configuration) "")
+(defn special-uid-configured?
+  "Checks wether a given user is configured under a certain configuration key."
+  [{:keys [configuration tokeninfo]} special-users-key]
+  (let [allowed-uids (or (special-users-key configuration) "")
         allowed (set (str/split allowed-uids #","))
         uid (get tokeninfo "uid")]
-    (when (and (seq allowed-uids)
-               (not (allowed uid)))
-      (log/warn "ACCESS DENIED (unauthorized) because not a special user.")
-      (api/throw-error 403 "Unauthorized"))))
+      (and (seq allowed-uids)
+         (allowed uid))))
+
+(defn require-special-uid
+  "Checks wether a given user is configured to be allowed to access this endpoint. Workaround for now."
+  [request]
+  (when-not (special-uid-configured? request :allowed-uids)
+    (log/warn "ACCESS DENIED (unauthorized) because not a special user.")
+    (api/throw-error 403 "Unauthorized")))
+
+(defn admin-uid?
+  "Checks wether a given user is configured to be an admin user."
+  [request]
+  (special-uid? request :admin-uids))
 
 (defn require-uid
   "Checks whether uid is present on token, throws 403 otherwise"
@@ -75,7 +84,9 @@
         is-human? (= "/employees" realm)
         has-scope? (set (from-token request "scope"))]
     (if is-human?
-      (when-not has-auth?
+      (when-not (or
+                  has-auth?
+                  (admin-uid? request))
         (api/throw-error 403 "Unauthorized")))
     (if is-robot?
       (if-not (has-scope? "application.write_all")
