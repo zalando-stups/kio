@@ -64,7 +64,7 @@
 (defn admin-uid?
   "Checks wether a given user is configured to be an admin user."
   [request]
-  (special-uid? request :admin-uids))
+  (special-uid-configured? request :admin-uids))
 
 (defn require-uid
   "Checks whether uid is present on token, throws 403 otherwise"
