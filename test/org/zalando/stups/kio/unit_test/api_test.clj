@@ -95,23 +95,55 @@
 
 (deftest ^:unit test-require-write-access
   (facts "write access"
-    (fact "a robot does not get access if the uid is missing"
+    (fact "access is denied if the uid is missing"
       (api/require-write-authorization .request. .team.) => (throws Exception anything (with-status? 403))
       (provided
         .request. =contains=> {:tokeninfo     {"realm" "/services"
-                                               "scope" ["uid" "application.write_all"]}
-                               :configuration {:allowed-uids "stups_robot,foo"}}))
+                                               "scope" ["uid" "application.write"]}
+                               :configuration {:admin-users "/services/stups_robot,foo"}}))
 
-    (fact "a robot does get access if it has write_all scope and required uid"
+    (fact "access is denied if the realm is neither services nor employees"
+      (api/require-write-authorization .request. .team.) => (throws Exception anything (with-status? 403))
+      (provided
+        .request. =contains=> {:tokeninfo     {"realm" "/somerealm"
+                                               "scope" ["uid" "application.write"]}
+                               :configuration {:admin-users "/services/stups_robot,foo"}}))
+
+    (fact "a robot does get access if it has write scope and required uid"
       (api/require-write-authorization .request. .team.) => nil
       (provided
         .request. =contains=> {:tokeninfo     {"realm" "/services"
                                                "uid"   "stups_robot"
-                                               "scope" ["uid" "application.write_all"]}
-                               :configuration {:allowed-uids "stups_robot,foo"}}
+                                               "scope" ["uid" "application.write"]}
+                               :configuration {:admin-users "stups_robot,foo"}}
         (auth/get-auth .request. .team.) => true))
 
-    (fact "a human does get access if it is in the required team"
+    (fact "a robot does get access if it is configured as admin user"
+      (api/require-write-authorization .request. .team.) => nil
+      (provided
+        .request. =contains=> {:tokeninfo     {"realm" "/services"
+                                                "uid"   "stups_robot"
+                                                "scope" ["uid"]}
+                               :configuration {:admin-users "/services/stups_robot,foo"}}))
+
+    (fact "a human does get access if it is configured as admin user"
+      (api/require-write-authorization .request. .team.) => nil
+      (provided
+        .request. =contains=> {:tokeninfo     {"realm" "/employees"
+                                               "uid"   "stups_robot"
+                                               "scope" ["uid"]}
+                               :configuration {:admin-users "/employees/stups_robot,foo"}}))
+
+   (fact "a human does not get access if it is configured as admin user in wrong realm"
+     (api/require-write-authorization .request. .team.) => (throws Exception anything (with-status? 403))
+     (provided
+      .request. =contains=> {:tokeninfo     {"realm" "/employees"
+                                             "uid"   "stups_robot"
+                                             "scope" ["uid"]}
+                             :configuration {:admin-users "/wrongrealm/stups_robot,foo"}}
+       (auth/get-auth .request. .team.) => false))
+
+   (fact "a human does get access if it is in the required team"
       (api/require-write-authorization .request. .team.) => nil
       (provided
         .request. =contains=> {:tokeninfo {"realm" "/employees"

@@ -45,27 +45,6 @@
   [request]
   (clojure.walk/keywordize-keys (:tokeninfo request)))
 
-(defn special-uid-configured?
-  "Checks wether a given user is configured under a certain configuration key."
-  [{:keys [configuration tokeninfo]} special-users-key]
-  (let [allowed-uids (or (special-users-key configuration) "")
-        allowed (set (str/split allowed-uids #","))
-        uid (get tokeninfo "uid")]
-      (and (seq allowed-uids)
-         (allowed uid))))
-
-(defn require-special-uid
-  "Checks wether a given user is configured to be allowed to access this endpoint. Workaround for now."
-  [request]
-  (when-not (special-uid-configured? request :allowed-uids)
-    (log/warn "ACCESS DENIED (unauthorized) because not a special user.")
-    (api/throw-error 403 "Unauthorized")))
-
-(defn admin-uid?
-  "Checks wether a given user is configured to be an admin user."
-  [request]
-  (special-uid-configured? request :admin-uids))
-
 (defn require-uid
   "Checks whether uid is present on token, throws 403 otherwise"
   [request]
@@ -73,28 +52,35 @@
     (log/warn "ACCESS DENIED (unauthorized) because no uid in tokeninfo.")
     (api/throw-error 403 "Unauthorized")))
 
+(defn is-admin-in-realm?
+  [uid realm {:keys [configuration tokeninfo]}]
+  (when-not (or uid realm)
+    false)
+  (let [uid_with_realm (str realm "/" uid)
+        allowed-uids-with-realm (or (:admin-users configuration) "")
+        allowed (set (str/split allowed-uids-with-realm #","))]
+    (and (seq allowed-uids-with-realm)
+         (allowed uid_with_realm))))
+
 (defn require-write-authorization
   "If user is employee, check that is in correct team.
    If user is service, check that it has application_write.all scope OR has application.write and is correct team"
   [request team]
   (require-uid request)
-  (let [has-auth? (auth/get-auth request team)
-        realm (from-token request "realm")
-        is-robot? (= "/services" realm)
-        is-human? (= "/employees" realm)
-        has-scope? (set (from-token request "scope"))]
-    (if is-human?
-      (when-not (or
-                  has-auth?
-                  (admin-uid? request))
-        (api/throw-error 403 "Unauthorized")))
-    (if is-robot?
-      (if-not (has-scope? "application.write_all")
-        (when-not (and
-                    (has-scope? "application.write")
-                    has-auth?)
+
+  (let [realm (str "/" (u/require-realms #{"employees" "services"} request))
+        uid (from-token request "uid")
+        is-admin? (is-admin-in-realm? uid realm request)]
+    (when-not is-admin?
+      (let [has-auth? (auth/get-auth request team)
+            is-robot? (= "/services" realm)
+            has-scope? (set (from-token request "scope"))]
+        (when-not has-auth?
           (api/throw-error 403 "Unauthorized"))
-        (require-special-uid request)))))
+        (when (and
+                is-robot?
+                (not (has-scope? "application.write")))
+          (api/throw-error 403 "Unauthorized"))))))
 
 ;; applications
 
