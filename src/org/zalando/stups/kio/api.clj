@@ -54,13 +54,12 @@
 
 (defn is-admin-in-realm?
   [uid realm {:keys [configuration tokeninfo]}]
-  (when-not (or uid realm)
-    false)
-  (let [uid_with_realm (str realm "/" uid)
-        allowed-uids-with-realm (or (:admin-users configuration) "")
-        allowed (set (str/split allowed-uids-with-realm #","))]
-    (and (seq allowed-uids-with-realm)
-         (allowed uid_with_realm))))
+  (when (and uid realm)
+    (let [uid_with_realm (str realm "/" uid)
+          allowed-uids-with-realm (or (:admin-users configuration) "")
+          allowed (set (str/split allowed-uids-with-realm #","))]
+      (and (seq allowed-uids-with-realm)
+           (allowed uid_with_realm)))))
 
 (defn require-write-authorization
   "If user is employee, check that is in correct team.
