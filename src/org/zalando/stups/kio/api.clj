@@ -53,17 +53,17 @@
     (api/throw-error 403 "Unauthorized")))
 
 (defn is-admin-in-realm?
-  [uid realm {:keys [configuration tokeninfo]}]
+  [uid realm {:keys [configuration]}]
   (when (and uid realm)
-    (let [uid_with_realm (str realm "/" uid)
+    (let [uid-with-realm (str realm "/" uid)
           allowed-uids-with-realm (or (:admin-users configuration) "")
           allowed (set (str/split allowed-uids-with-realm #","))]
       (and (seq allowed-uids-with-realm)
-           (allowed uid_with_realm)))))
+           (allowed uid-with-realm)))))
 
 (defn require-write-authorization
   "If user is employee, check that is in correct team.
-   If user is service, check that it has application_write.all scope OR has application.write and is correct team.
+   If user is service, check that it has application_write scope OR has application.write and is correct team.
    If user is listed as admin user grant access"
   [request team]
   (require-uid request)

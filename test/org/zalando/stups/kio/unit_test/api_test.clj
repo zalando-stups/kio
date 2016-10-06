@@ -114,8 +114,7 @@
       (provided
         .request. =contains=> {:tokeninfo     {"realm" "/services"
                                                "uid"   "stups_robot"
-                                               "scope" ["uid" "application.write"]}
-                               :configuration {:admin-users "stups_robot,foo"}}
+                                               "scope" ["uid" "application.write"]}}
         (auth/get-auth .request. .team.) => true))
 
     (fact "a robot does get access if it is configured as admin user"
