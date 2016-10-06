@@ -64,7 +64,8 @@
 
 (defn require-write-authorization
   "If user is employee, check that is in correct team.
-   If user is service, check that it has application_write.all scope OR has application.write and is correct team"
+   If user is service, check that it has application_write.all scope OR has application.write and is correct team.
+   If user is listed as admin user grant access"
   [request team]
   (require-uid request)
 
