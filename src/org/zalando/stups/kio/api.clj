@@ -58,13 +58,12 @@
     (let [uid-with-realm (str realm "/" uid)
           allowed-uids-with-realm (or (:admin-users configuration) "")
           allowed (set (str/split allowed-uids-with-realm #","))]
-      (and (seq allowed-uids-with-realm)
-           (allowed uid-with-realm)))))
+      (allowed uid-with-realm))))
 
 (defn require-write-authorization
   "If user is employee, check that is in correct team.
-   If user is service, check that it has application_write scope OR has application.write and is correct team.
-   If user is listed as admin user grant access"
+   If user is service, check that it has application.write scope and is correct team.
+   If user is listed as admin grant access to user"
   [request team]
   (require-uid request)
 
