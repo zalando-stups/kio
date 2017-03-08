@@ -10,6 +10,7 @@
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [org.zalando.stups/friboo "1.10.0"]
                  [clj-time "0.12.0"]
+                 [org.zalando.stups/tokens "0.11.0-beta-2"]
                  [yesql "0.5.3"]]
 
   :main ^:skip-aot org.zalando.stups.kio.core
