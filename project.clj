@@ -8,8 +8,8 @@
   :min-lein-version "2.0.0"
 
   :dependencies [[org.clojure/clojure "1.8.0"]
-                 [org.zalando.stups/friboo "1.10.0"]
-                 [clj-time "0.12.0"]
+                 [org.zalando.stups/friboo "1.13.0"]
+                 [clj-time "0.13.0"]
                  [org.zalando.stups/tokens "0.11.0-beta-2"]
                  [yesql "0.5.3"]]
 
@@ -53,4 +53,4 @@
                        :source-paths ["dev"]
                        :dependencies [[org.clojure/tools.namespace "0.2.10"]
                                       [midje "1.8.3"]
-                                      [org.clojure/java.classpath "0.2.2"]]}})
+                                      [org.clojure/java.classpath "0.2.3"]]}})

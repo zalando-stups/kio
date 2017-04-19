@@ -36,10 +36,11 @@
                         api/map->API [:db :http-audit-logger]
                         :db (sql/map->DB {:configuration (:db configuration)})
                         :http-audit-logger (using
-                                             (http-logger/map->HTTP {:configuration (:httplogger configuration)})
-                                             [:tokens])
-                        :tokens (o2/map->OAUth2TokenRefresher {:configuration (:oauth2 configuration)
-                                                               :tokens        {:http-audit-logger ["uid"]}}))]
+                                            (http-logger/map->HTTP {:configuration (assoc (:httplogger configuration)
+                                                                                          :token-name "http-audit-logger")})
+                                            [:tokens])
+                        :tokens (o2/map->OAuth2TokenRefresher {:configuration (:oauth2 configuration)
+                                                               :tokens        {"http-audit-logger" ["uid"]}}))]
 
     (system/run configuration system)))
 

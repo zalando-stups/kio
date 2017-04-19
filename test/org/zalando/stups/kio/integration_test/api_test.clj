@@ -21,7 +21,7 @@
 
 (deftest ^:integration integration-test
   (with-redefs [api/require-write-authorization (constantly nil)
-                oauth2/map->OAUth2TokenRefresher map->NoTokenRefresher
+                oauth2/map->OAuth2TokenRefresher map->NoTokenRefresher
                 oauth2/access-token (constantly "token")
                 api/from-token (constantly "barfoo")]
 
