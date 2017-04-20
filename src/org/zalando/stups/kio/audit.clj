@@ -17,7 +17,7 @@
   [tokeninfo app]
   {:event_type   {:namespace "cloud.zalando.com"
                   :name      "application-modified"
-                  :version   "2"}
+                  :version   "3"}
    :triggered_at (get-date)
    :triggered_by {:type       "USER"
                   :id         (:uid tokeninfo)
