@@ -4,6 +4,7 @@
             [org.zalando.stups.kio.core :refer [run]]
             [org.zalando.stups.kio.sql :as sql]
             [org.zalando.stups.kio.api :as api]
+            [org.zalando.stups.kio.metrics :as metrics]
             [org.zalando.stups.friboo.user :as u]
             [org.zalando.stups.friboo.auth :as auth]
             [clojure.java.jdbc :as jdbc]))
@@ -25,20 +26,20 @@
 (deftest ^:unit test-read-access
   (facts "people without a team can read stuff"
     (fact "applications without search"
-      (api/read-applications {} .request. .db. .logger.) =not=> (throws Exception)
+      (api/read-applications {} .request. {:db .db.}) =not=> (throws Exception)
       (provided
         .request. =contains=> {:tokeninfo {"uid"   "nikolaus"
                                            "realm" "employees"}}
         (sql/cmd-read-applications anything {:connection .db.}) => []))
     (fact "applications with search"
-      (api/read-applications .params. .request. .db. .logger.) =not=> (throws Exception)
+      (api/read-applications .params. .request. {:db .db.}) =not=> (throws Exception)
       (provided
         .request. =contains=> {:tokeninfo {"uid"   "nikolaus"
                                            "realm" "employees"}}
         .params. =contains=> {:search "foo bar"}
         (sql/cmd-search-applications anything {:connection .db.}) => []))
     (fact "single app"
-      (api/read-application nil .request. .db. .logger.) =not=> (throws Exception)
+      (api/read-application nil .request. {:db .db.}) =not=> (throws Exception)
       (provided
         .request. =contains=> {:tokeninfo {"uid"   "nikolaus"
                                            "realm" "employees"}}
@@ -47,7 +48,7 @@
 (deftest ^:unit test-write-application
   (facts "writing applications"
     (fact "when updating application, the team in db is compared"
-      (api/create-or-update-application! .params. .request. .db. .logger.) =not=> (throws Exception)
+      (api/create-or-update-application! .params. .request. {:db .db. :http-audit-logger .logger.}) =not=> (throws Exception)
       (provided
         .logger. =contains=> {:log-fn identity}
         .params. =contains=> {:application_id .app-id.
@@ -61,7 +62,7 @@
         (api/require-write-authorization .request. .db-team-id.) => nil))
 
     (fact "when creating application, the team in body is compared"
-      (api/create-or-update-application! .params. .request. .db. .logger.) =not=> (throws Exception)
+      (api/create-or-update-application! .params. .request. {:db .db. :http-audit-logger .logger.}) =not=> (throws Exception)
       (provided
         .logger. =contains=> {:log-fn identity}
         .params. =contains=> {:application_id .app-id.
@@ -129,7 +130,7 @@
         .request. =contains=> {:tokeninfo {"realm" "/employees"
                                            "uid"   "npiccolotto"
                                            "scope" ["uid"]}}
-        (auth/get-auth .request. .team.) => true))
+        (auth/get-auth .request. .team.) => true)
 
     (fact "a human does not get access if it is not in the required team"
       (api/require-write-authorization .request. .team.) => (throws Exception (with-status? 403))
@@ -164,7 +165,7 @@
         (auth/get-auth .request. .team.) => false))
 
     (fact "a robot can write applications"
-      (api/create-or-update-application! .params. .request. .db. .logger.) => (contains {:status 200})
+      (api/create-or-update-application! .params. .request. {:db .db. :http-audit-logger .logger.}) => (contains {:status 200})
       (provided
         .logger. =contains=> {:log-fn identity}
         .request. =contains=> {:tokeninfo {"uid"   "robobro"
@@ -179,7 +180,7 @@
         (sql/cmd-create-or-update-application! anything {:connection .db.}) => nil))
 
     (fact "a robot can write versions"
-      (api/create-or-update-version! .params. .request. .db. .logger.) =not=> (throws Exception)
+      (api/create-or-update-version! .params. .request. {:db .db. :app-metrics .app-metrics.}) =not=> (throws Exception)
       (provided
         .params. =contains=> {:version        .version.
                               :version_id     .version-id.
@@ -189,11 +190,12 @@
                                            "scope" ["uid" "application.write"]}}
         .version. =contains=> {:id .version-id.}
         (auth/get-auth .request. .team-id.) => true
+        (metrics/mark-deprecation .app-metrics. :deprecation-version-put) => nil
         (api/load-application .application-id. .db.) => {:team_id .team-id.
                                                          :id      .application-id.}))
 
     (fact "a robot can not write approvals"
-      (api/approve-version! .params. .request. .db. .logger.) => (throws Exception (with-status? 403))
+      (api/approve-version! .params. .request. {:db .db. :app-metrics .app-metrics.}) => (throws Exception (with-status? 403))
       (provided
         .request. =contains=> {:tokeninfo     {"uid"   "robobro"
                                                "realm" "/services"
@@ -203,11 +205,12 @@
         .params. =contains=> {:version_id     .version-id.
                               :application_id .application-id.
                               :notes          .notes.}
+        (metrics/mark-deprecation .app-metrics. :deprecation-version-approvals-put) => nil
         (api/load-application .application-id. .db.) => {:team_id .team-id.
                                                          :id      .application-id.}))
 
     (fact "a human can write approvals"
-      (api/approve-version! .params. .request. .db. .logger.) =not=> (throws Exception)
+      (api/approve-version! .params. .request. {:db .db. :app-metrics .app-metrics.}) =not=> (throws Exception)
       (provided
         .request. =contains=> {:tokeninfo     {"uid"   .uid.
                                                "realm" "/employees"
@@ -216,8 +219,9 @@
                                                :magnificent-url  "magnificent-url"}}
         .params. =contains=> {:version_id     .version-id.
                               :application_id .application-id.
-                              :approval       {:notes .notes.}
-                              }
+                              :approval       {:notes .notes.}}
+
         (u/require-internal-team .team-id. .request.) => nil
+        (metrics/mark-deprecation .app-metrics. :deprecation-version-approvals-put) => nil
         (api/load-application .application-id. .db.) => {:team_id .team-id.
-                                                         :id      .application-id.}))))
+                                                         :id      .application-id.})))))
