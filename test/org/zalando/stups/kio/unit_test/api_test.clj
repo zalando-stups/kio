@@ -42,26 +42,7 @@
       (provided
         .request. =contains=> {:tokeninfo {"uid"   "nikolaus"
                                            "realm" "employees"}}
-        (sql/cmd-read-application anything {:connection .db.}) => {}))
-
-    (fact "versions"
-      (api/read-versions-by-application nil .request. .db. .logger.) =not=> (throws Exception)
-      (provided
-        .request. =contains=> {:tokeninfo {"uid"   "nikolaus"
-                                           "realm" "employees"}}
-        (sql/cmd-read-versions-by-application anything {:connection .db.}) => {}))
-    (fact "single version"
-      (api/read-version-by-application nil .request. .db. .logger.) =not=> (throws Exception)
-      (provided
-        .request. =contains=> {:tokeninfo {"uid"   "nikolaus"
-                                           "realm" "employees"}}
-        (sql/cmd-read-version-by-application anything {:connection .db.}) => {}))
-    (fact "approvals"
-      (api/read-approvals-by-version nil .request. .db. .logger.) =not=> (throws Exception)
-      (provided
-        .request. =contains=> {:tokeninfo {"uid"   "nikolaus"
-                                           "realm" "employees"}}
-        (sql/cmd-read-approvals-by-version anything {:connection .db.}) => {}))))
+        (sql/cmd-read-application anything {:connection .db.}) => {}))))
 
 (deftest ^:unit test-write-application
   (facts "writing applications"
@@ -209,9 +190,7 @@
         .version. =contains=> {:id .version-id.}
         (auth/get-auth .request. .team-id.) => true
         (api/load-application .application-id. .db.) => {:team_id .team-id.
-                                                         :id      .application-id.}
-        ; this is because of the with-transaction macro...
-        (jdbc/db-transaction* anything anything) => irrelevant))
+                                                         :id      .application-id.}))
 
     (fact "a robot can not write approvals"
       (api/approve-version! .params. .request. .db. .logger.) => (throws Exception (with-status? 403))
@@ -225,8 +204,7 @@
                               :application_id .application-id.
                               :notes          .notes.}
         (api/load-application .application-id. .db.) => {:team_id .team-id.
-                                                         :id      .application-id.}
-        (sql/cmd-approve-version! anything anything) => irrelevant :times 0))
+                                                         :id      .application-id.}))
 
     (fact "a human can write approvals"
       (api/approve-version! .params. .request. .db. .logger.) =not=> (throws Exception)
@@ -242,9 +220,4 @@
                               }
         (u/require-internal-team .team-id. .request.) => nil
         (api/load-application .application-id. .db.) => {:team_id .team-id.
-                                                         :id      .application-id.}
-
-        (sql/cmd-approve-version! {:version_id     .version-id.
-                                   :application_id .application-id.
-                                   :user_id        .uid.
-                                   :notes          .notes.} {:connection .db.}) => nil))))
+                                                         :id      .application-id.}))))

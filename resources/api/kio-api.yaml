@@ -188,7 +188,7 @@ paths:
                 example: https://github.com/zalando-stups/kio/issues
               required_approvers:
                 type: integer
-                description: Minimum number of approvers needed for a version. Used by fullstop.
+                description: Minimum number of approvers needed for a version. Used by fullstop. Deprecated, will be removed in the future.
                 example: 2
               specification_type:
                 type: string
@@ -253,8 +253,9 @@ paths:
   '/apps/{application_id}/approvals':
     get:
       summary: list used approval types
+      deprecated: true
       description: |
-        Returns all used approval types for an application.
+        Returns all used approval types for an application. Deprecated, will be removed in the future. Will always return an empty array.
       tags:
         - Applications
       operationId: 'org.zalando.stups.kio.api/read-application-approvals'
@@ -277,8 +278,9 @@ paths:
   '/apps/{application_id}/versions':
     get:
       summary: list versions
+      deprecated: true
       description: |
-        Returns a list of all versions of an application.
+        Returns a list of all versions of an application. Deprecated, will be removed in the future. Will always return an empty array.
       tags:
         - Versions
       operationId: 'org.zalando.stups.kio.api/read-versions-by-application'
@@ -317,8 +319,9 @@ paths:
   '/apps/{application_id}/versions/{version_id}':
     get:
       summary: read version
+      deprecated: true
       description: |
-        Returns a list of all versions of an application.
+        Returns a list of all versions of an application. Deprecated, will be removed in the future. Will always return an empty array.
       tags:
         - Versions
       operationId: 'org.zalando.stups.kio.api/read-version-by-application'
@@ -375,7 +378,8 @@ paths:
           $ref: '#/responses/Error'
 
     put:
-      summary: create or update version
+      summary: Create or update version. Deprecated, will be removed in the future. Will not actually save the version in the DB.
+      deprecated: true
       description: |
         Creates or updates a version.
       tags:
@@ -399,7 +403,8 @@ paths:
 
   '/apps/{application_id}/versions/{version_id}/approvals':
     get:
-      summary: list approvals
+      summary: List approvals. Deprecated, will be removed in the future. Will always return an empty array.
+      deprecated: true
       description: |
         Returns a list of all approvals of a version.
       tags:
@@ -448,7 +453,8 @@ paths:
           $ref: '#/responses/Error'
 
     post:
-      summary: approve version
+      summary: Approve version. Deprecated, will be removed in the future. Will not actually save the approval in the DB.
+      deprecated: true
       description: |
         Approves a version.
       tags:
