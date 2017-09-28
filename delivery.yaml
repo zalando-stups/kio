@@ -1,0 +1,29 @@
+build_meta:
+  env:
+    LEIN_ROOT: true
+build_steps:
+- desc: Install dependencies
+  cmd: |
+    # OpenJDK
+    apt-get update
+    apt-get install -y openjdk-8*
+    # Leiningen
+    curl https://raw.githubusercontent.com/technomancy/leiningen/stable/bin/lein >/usr/bin/lein
+    chmod a+x /usr/bin/lein
+    # Docker
+    curl -fsSL https://delivery.cloud.zalando.com/utils/ensure-docker | sh
+- desc: Run unit tests
+  cmd: |
+    docker run -d -p 5432:5432 postgres
+    lein test
+- desc: Build and push docker image
+  cmd: |
+    lein do clean, uberjar
+    IMAGE="pierone.stups.zalan.do/automata/kio:${CDP_BUILD_VERSION}"
+    docker build -t "$IMAGE" .
+    if [ -z "$CDP_PULL_REQUEST_NUMBER" ]; then
+      docker push "$IMAGE"
+    fi
+    TEST_IMAGE="pierone.stups.zalan.do/automata/kio-test:${CDP_BUILD_VERSION}"
+    docker tag "$IMAGE" "$TEST_IMAGE"
+    docker push "$TEST_IMAGE"
