@@ -19,6 +19,7 @@ build_steps:
 - desc: Build and push docker image
   cmd: |
     lein do clean, uberjar
+    touch scm-source.json # TODO Remove this after removing it from Dockerfile
     IMAGE="pierone.stups.zalan.do/automata/kio:${CDP_BUILD_VERSION}"
     docker build -t "$IMAGE" .
     if [ -z "$CDP_PULL_REQUEST_NUMBER" ]; then
