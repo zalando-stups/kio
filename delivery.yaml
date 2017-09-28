@@ -15,4 +15,4 @@ build_steps:
 - desc: Run unit tests
   cmd: |
     docker run -d -p 5432:5432 postgres
-    lein cloverage
+    lein test
