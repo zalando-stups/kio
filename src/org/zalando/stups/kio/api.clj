@@ -22,6 +22,7 @@
             [org.zalando.stups.friboo.auth :as auth]
             [org.zalando.stups.kio.sql :as sql]
             [org.zalando.stups.kio.audit :as audit]
+            [org.zalando.stups.kio.metrics :as metrics]
             [clj-time.coerce :as tcoerce]
             [io.sarnowski.swagger1st.util.api :as api]
             [ring.util.response :refer :all]
@@ -29,7 +30,7 @@
             [clojure.java.jdbc :refer [with-db-transaction]]))
 
 ; define the API component and its dependencies
-(def-http-component API "api/kio-api.yaml" [db http-audit-logger])
+(def-http-component API "api/kio-api.yaml" [db http-audit-logger] :dependencies-as-map true)
 
 (def default-http-configuration
   {:http-port 8080})
@@ -84,7 +85,7 @@
 ;; applications
 
 (defn read-applications
-  [{:keys [search modified_before modified_after team_id active]} request db _]
+  [{:keys [search modified_before modified_after team_id active]} request {:keys [db]}]
   (u/require-realms #{"employees" "services"} request)
   (let [conn {:connection db}
         params {:searchquery search
@@ -125,7 +126,7 @@
   [applications]
   (map enrich-application applications))
 
-(defn read-application [{:keys [application_id]} request db _]
+(defn read-application [{:keys [application_id]} request {:keys [db]}]
   (u/require-realms #{"employees" "services"} request)
   (log/debug "Read application %s." application_id)
   (-> (sql/cmd-read-application
@@ -136,7 +137,7 @@
       (single-response)
       (content-type-json)))
 
-(defn create-or-update-application! [{:keys [application application_id]} request db {:keys [log-fn]}]
+(defn create-or-update-application! [{:keys [application application_id]} request {:keys [db http-audit-logger]}]
   (let [uid (from-token request "uid")
         defaults {:specification_url   nil
                   :documentation_url   nil
@@ -155,7 +156,8 @@
 
     (let [app-to-save (merge-with #(or %2 %1) defaults application {:id               application_id
                                                                     :last_modified_by uid
-                                                                    :created_by       uid})]
+                                                                    :created_by       uid})
+          log-fn (:log-fn http-audit-logger)]
       (sql/cmd-create-or-update-application!
         app-to-save
         {:connection db})
@@ -165,85 +167,49 @@
     (log/audit "Created/updated application %s using data %s." application_id application)
     (response nil)))
 
-(defn read-application-approvals [{:keys [application_id]} request db _]
+(defn read-application-approvals [_ request {:keys [app-metrics]}]
+  (metrics/mark-deprecation app-metrics :deprecation-application-approvals-get)
   (u/require-internal-user request)
-  (log/debug "Read all approvals for application %s." application_id)
-  (->> (sql/cmd-read-application-approvals
-         {:application_id application_id}
-         {:connection db})
-       (sql/strip-prefixes)
-       (map :approval_type)
+  (->> []
        (response)
        (content-type-json)))
 
 ;; versions
 
-(defn read-versions-by-application [{:keys [application_id]} request db _]
+(defn read-versions-by-application [_ request {:keys [app-metrics]}]
+  (metrics/mark-deprecation app-metrics :deprecation-versions-get)
   (u/require-realms #{"employees" "services"} request)
-  (log/debug "Read all versions for application %s." application_id)
-  (-> (sql/cmd-read-versions-by-application
-        {:application_id application_id}
-        {:connection db})
-      (sql/strip-prefixes)
+  (-> []
       (response)
       (content-type-json)))
 
-(defn read-version-by-application [{:keys [application_id version_id]} request db _]
+(defn read-version-by-application [_ request {:keys [app-metrics]}]
+  (metrics/mark-deprecation app-metrics :deprecation-version-get)
   (u/require-realms #{"employees" "services"} request)
-  (log/debug "Read version %s of application %s." version_id application_id)
-  (-> (sql/cmd-read-version-by-application
-        {:id             version_id
-         :application_id application_id}
-        {:connection db})
-      (sql/strip-prefixes)
-      (single-response)
+  (-> (not-found {})
       (content-type-json)))
 
-(defn create-or-update-version! [{:keys [application_id version_id version]} request db _]
+(defn create-or-update-version! [{:keys [application_id]} request {:keys [db app-metrics]}]
+  (metrics/mark-deprecation app-metrics :deprecation-version-put)
   (if-let [application (load-application application_id db)]
     (do
       (require-write-authorization request (:team_id application))
-      (with-db-transaction
-        [connection db]
-        (let [uid (from-token request "uid")
-              defaults {:notes nil}]
-          (sql/cmd-create-or-update-version!
-            (merge defaults version {:id               version_id
-                                     :application_id   application_id
-                                     :created_by       uid
-                                     :last_modified_by uid})
-            {:connection connection}))
-        (sql/cmd-delete-approvals! {:application_id application_id
-                                    :version_id     version_id}
-                                   {:connection connection}))
-      (log/audit "Created/updated version %s for application %s using data %s." version_id application_id version)
       (response nil))
     (api/error 404 "application not found")))
 
 ;; approvals
 
-(defn read-approvals-by-version [{:keys [application_id version_id]} request db _]
+(defn read-approvals-by-version [_ request {:keys [db app-metrics]}]
+  (metrics/mark-deprecation app-metrics :deprecation-version-approvals-get)
   (u/require-realms #{"employees" "services"} request)
-  (log/debug "Read approvals for version %s of application %s." version_id application_id)
-  (-> (sql/cmd-read-approvals-by-version
-        {:version_id     version_id
-         :application_id application_id}
-        {:connection db})
-      (sql/strip-prefixes)
+  (-> []
       (response)
       (content-type-json)))
 
-(defn approve-version! [{:keys [application_id version_id approval]} request db _]
+(defn approve-version! [{:keys [application_id]} request {:keys [db app-metrics]}]
+  (metrics/mark-deprecation app-metrics :deprecation-version-approvals-put)
   (if-let [application (load-application application_id db)]
     (do
       (u/require-internal-team (:team_id application) request)
-      (let [defaults {:notes nil}
-            uid (from-token request "uid")]
-        (sql/cmd-approve-version!
-          (merge defaults approval {:version_id     version_id
-                                    :application_id application_id
-                                    :user_id        uid})
-          {:connection db}))
-      (log/audit "Approved version %s for application %s." version_id application_id)
       (response nil))
     (api/error 404 "application not found")))

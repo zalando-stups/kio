@@ -18,6 +18,7 @@
             [org.zalando.stups.friboo.system :as system]
             [org.zalando.stups.kio.sql :as sql]
             [org.zalando.stups.kio.api :as api]
+            [org.zalando.stups.kio.metrics :as app-metrics]
             [org.zalando.stups.friboo.system.oauth2 :as o2]
             [org.zalando.stups.friboo.system.audit-logger.http :as http-logger]
             [org.zalando.stups.friboo.log :as log])
@@ -33,8 +34,11 @@
                          default-configuration])
 
         system        (system/http-system-map configuration
-                        api/map->API [:db :http-audit-logger]
+                        api/map->API [:db :http-audit-logger :metrics]
                         :db (sql/map->DB {:configuration (:db configuration)})
+                        :app-metrics (using
+                                       (app-metrics/map->DeprecationMetrics {})
+                                       [:metrics])
                         :http-audit-logger (using
                                             (http-logger/map->HTTP {:configuration (assoc (:httplogger configuration)
                                                                                           :token-name "http-audit-logger")})

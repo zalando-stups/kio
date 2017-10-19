@@ -27,8 +27,6 @@
    :db-init-sql    "SET search_path TO zk_data, public"})
 
 (defqueries "db/applications.sql")
-(defqueries "db/versions.sql")
-(defqueries "db/approvals.sql")
 (generate-hystrix-commands)
 
 (def column-prefix-pattern #"[a-z]+_(.+)")
@@ -45,4 +43,4 @@
   [results]
   (map (fn [result]
           (into {} (map (fn [[k v]] [(remove-prefix k) v]) result)))
-         results))
+       results))
