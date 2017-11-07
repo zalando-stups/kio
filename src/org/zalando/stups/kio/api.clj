@@ -30,7 +30,7 @@
             [clojure.java.jdbc :refer [with-db-transaction]]))
 
 ; define the API component and its dependencies
-(def-http-component API "api/kio-api.yaml" [db http-audit-logger] :dependencies-as-map true)
+(def-http-component API "api/kio-api.yaml" [db http-audit-logger app-metrics] :dependencies-as-map true)
 
 (def default-http-configuration
   {:http-port 8080})
