@@ -34,7 +34,7 @@
                          default-configuration])
 
         system        (system/http-system-map configuration
-                        api/map->API [:db :http-audit-logger :metrics]
+                        api/map->API [:db :http-audit-logger :app-metrics]
                         :db (sql/map->DB {:configuration (:db configuration)})
                         :app-metrics (using
                                        (app-metrics/map->DeprecationMetrics {})
