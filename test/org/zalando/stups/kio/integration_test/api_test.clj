@@ -30,6 +30,7 @@
                            :content-type     :json}
           application     {:team_id "bar"
                            :active  true
+                           :service_url "localkjhsdfklau"
                            :name    "FooBar"}
           version         {:notes    "My new version"
                            :artifact "docker://stups/foo1:1.0-master"}
