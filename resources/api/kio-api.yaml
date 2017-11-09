@@ -534,6 +534,7 @@ definitions:
         type: string
         description: URL of the application
         example: https://kio.example.com/
+        pattern: "/^(http|https):\/\//i"
       scm_url:
         type: string
         description: URL of SCM repository
