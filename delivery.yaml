@@ -1,30 +1,40 @@
-build_meta:
+version: '2017-09-20'
+pipeline:
+- id: build
   env:
     LEIN_ROOT: true
-build_steps:
-- desc: Install dependencies
-  cmd: |
-    # OpenJDK
-    apt-get update
-    apt-get install -y openjdk-8*
-    # Leiningen
-    curl https://raw.githubusercontent.com/technomancy/leiningen/stable/bin/lein >/usr/bin/lein
-    chmod a+x /usr/bin/lein
-    # Docker
-    curl -fsSL https://delivery.cloud.zalando.com/utils/ensure-docker | sh
-- desc: Run unit tests
-  cmd: |
-    docker run -d -p 5432:5432 postgres
-    lein test
-- desc: Build and push docker image
-  cmd: |
-    lein do clean, uberjar
-    touch target/scm-source.json # TODO Remove this after removing it from Dockerfile
-    IMAGE="pierone.stups.zalan.do/automata/kio:${CDP_BUILD_VERSION}"
-    docker build -t "$IMAGE" .
-    if [ -z "$CDP_PULL_REQUEST_NUMBER" ]; then
-      docker push "$IMAGE"
-    fi
-    TEST_IMAGE="pierone.stups.zalan.do/automata/kio-test:${CDP_BUILD_VERSION}"
-    docker tag "$IMAGE" "$TEST_IMAGE"
-    docker push "$TEST_IMAGE"
+  type: script
+  overlay: clojure-for-cdp
+  artifacts:
+  - type: docs
+    name: automata-databases
+    path: schema
+  commands:
+  - desc: Run unit tests
+    cmd: |
+      docker run -d -p 5432:5432 postgres
+      lein test
+  - desc: Build and push docker image
+    cmd: |
+      lein do clean, uberjar
+      touch target/scm-source.json # TODO Remove this after removing it from Dockerfile
+      IMAGE="pierone.stups.zalan.do/automata/kio:${CDP_BUILD_VERSION}"
+      docker build -t "$IMAGE" .
+      if [ -z "$CDP_PULL_REQUEST_NUMBER" ]; then
+        docker push "$IMAGE"
+      fi
+      TEST_IMAGE="pierone.stups.zalan.do/automata/kio-test:${CDP_BUILD_VERSION}"
+      docker tag "$IMAGE" "$TEST_IMAGE"
+      docker push "$TEST_IMAGE"
+- desc: Generate database docs
+    cmd: |
+      mkdir schema
+      if [ -z "$CDP_PULL_REQUEST_NUMBER" ]; then
+        DOCS_PATH=schema/kio
+
+        wget http://sourceforge.net/projects/schemaspy/files/schemaspy/SchemaSpy%205.0.0/schemaSpy_5.0.0.jar/download -O schema.jar
+
+        wget https://jdbc.postgresql.org/download/postgresql-42.2.4.jar
+
+        java -jar schema.jar -t pgsql -s zk_data -db postgres -u postgres -host localhost -o $DOCS_PATH -dp postgresql-42.2.4.jar -noads
+      fi
