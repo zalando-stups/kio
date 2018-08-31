@@ -4,7 +4,7 @@ pipeline:
   env:
     LEIN_ROOT: true
   type: script
-  overlay: clojure-for-cdp
+  overlay: ci/clojure-for-cdp
   artifacts:
   - type: docs
     name: automata-databases
@@ -26,7 +26,7 @@ pipeline:
       TEST_IMAGE="pierone.stups.zalan.do/automata/kio-test:${CDP_BUILD_VERSION}"
       docker tag "$IMAGE" "$TEST_IMAGE"
       docker push "$TEST_IMAGE"
-- desc: Generate database docs
+  - desc: Generate database docs
     cmd: |
       mkdir schema
       if [ -z "$CDP_PULL_REQUEST_NUMBER" ]; then
