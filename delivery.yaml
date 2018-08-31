@@ -4,7 +4,7 @@ pipeline:
   env:
     LEIN_ROOT: true
   type: script
-  overlay: clojure-for-cdp
+  overlay: ci/clojure-for-cdp
   artifacts:
   - type: docs
     name: automata-databases
