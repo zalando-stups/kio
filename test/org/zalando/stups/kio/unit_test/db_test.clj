@@ -1,7 +1,6 @@
 (ns org.zalando.stups.kio.unit-test.db-test
   (:require [midje.sweet :refer :all]
             [clojure.test :refer [deftest]]
-            [org.zalando.stups.kio.sql :as db]
             [com.stuartsierra.component :as component]
             [org.zalando.stups.kio.sql :as sql])
   (:import (org.flywaydb.core Flyway)))
