@@ -31,7 +31,7 @@ pipeline:
       if [ -z "$CDP_PULL_REQUEST_NUMBER" ]; then
         DOCS_PATH=schema/kio
 
-        wget http://sourceforge.net/projects/schemaspy/files/schemaspy/SchemaSpy%205.0.0/schemaSpy_5.0.0.jar/download -O schema.jar
+        wget https://github.com/schemaspy/schemaspy/releases/download/v6.0.0/schemaspy-6.0.0.jar -O schema.jar
 
         wget https://jdbc.postgresql.org/download/postgresql-42.2.4.jar
 
