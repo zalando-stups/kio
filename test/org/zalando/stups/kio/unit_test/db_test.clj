@@ -13,6 +13,6 @@
              :password    "postgres"
              :init-sql    "SET search_path TO zk_data, public"})
 
-(deftest ^:integration apply-migrations
+(deftest ^:unit apply-migrations
   (fact "run migrations against db so that docs can be generated"
     (component/stop (org.zalando.stups.friboo.system.db/start-component (sql/map->DB {:configuration config}) true))))
