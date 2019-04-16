@@ -4,6 +4,7 @@ swagger: '2.0'
 info:
   title: Kio API
   version: '0.2'
+  x-api-id: 1e6d4a1b-0336-4bdf-b5e8-76092da8b4ff
   description: Kio is STUPS' application registry.
 
 externalDocs:
