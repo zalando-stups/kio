@@ -4,6 +4,7 @@ MAINTAINER Zalando SE
 
 RUN mkdir /appdynamics
 COPY appdynamics /appdynamics
+COPY resources/api/kio-api.yaml /zalando-apis
 
 EXPOSE 8080
 ENV HTTP_PORT=8080
