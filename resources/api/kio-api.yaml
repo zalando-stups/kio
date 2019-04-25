@@ -84,6 +84,10 @@ paths:
                   type: string
                   description: ID of the team, responsible for this application
                   example: stups
+                incident_contact:
+                  type: string
+                  description: 24x7 contact, e.g. team ID of on-call support team
+                  example: sre
                 active:
                   type: boolean
                   description: If this appliation is active, ie gets credentials
@@ -154,6 +158,10 @@ paths:
                 type: string
                 description: ID of the team, responsible for this application
                 example: stups
+              incident_contact:
+                type: string
+                description: 24x7 contact, e.g. team ID of on-call support team
+                example: sre
               active:
                 type: boolean
                 description: If the application is active
@@ -514,6 +522,10 @@ definitions:
         type: string
         description: ID of the team, responsible for this application
         example: stups
+      incident_contact:
+        type: string
+        description: 24x7 contact, e.g. team ID of on-call support team
+        example: sre
       active:
         type: boolean
         description: if the application is active
