@@ -7,11 +7,14 @@
 
   :min-lein-version "2.0.0"
 
-  :dependencies [[org.clojure/clojure "1.8.0"]
+  :dependencies [[org.clojure/clojure "1.10.0"]
                  [org.zalando.stups/friboo "1.13.0"]
                  [clj-time "0.13.0"]
                  [org.zalando.stups/tokens "0.11.0-beta-2"]
                  [yesql "0.5.3"]]
+
+  :managed-dependencies [[org.flatland/ordered "1.5.7"]
+                         [marick/suchwow "6.0.2"]]
 
   :main ^:skip-aot org.zalando.stups.kio.core
   :uberjar-name "kio.jar"
@@ -52,5 +55,5 @@
              :dev     {:repl-options {:init-ns user}
                        :source-paths ["dev"]
                        :dependencies [[org.clojure/tools.namespace "0.2.10"]
-                                      [midje "1.8.3"]
+                                      [midje "1.9.8"]
                                       [org.clojure/java.classpath "0.2.3"]]}})
