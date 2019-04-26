@@ -1,6 +1,7 @@
 -- name: read-applications
 SELECT a_id,
        a_team_id,
+       a_incident_contact,
        a_active,
        a_name,
        a_subtitle,
@@ -13,11 +14,13 @@ SELECT a_id,
  WHERE a_last_modified <= COALESCE(:modified_before, a_last_modified)
    AND a_last_modified >= COALESCE(:modified_after, a_last_modified)
    AND a_active = COALESCE(:active, a_active)
-   AND a_team_id = COALESCE(:team_id, a_team_id);
+   AND a_team_id = COALESCE(:team_id, a_team_id)
+   AND a_incident_contact = COALESCE(:incident_contact, a_incident_contact);
 
 -- name: search-applications
   SELECT a_id,
          a_team_id,
+         a_incident_contact,
          a_active,
          a_name,
          a_subtitle,
@@ -33,6 +36,7 @@ SELECT a_id,
                                 COALESCE(a_description, ''), query) AS a_matched_description
     FROM (SELECT a_id,
                  a_team_id,
+                 a_incident_contact,
                  a_active,
                  a_name,
                  a_subtitle,
@@ -51,6 +55,7 @@ SELECT a_id,
            WHERE a_last_modified <= COALESCE(:modified_before, a_last_modified)
              AND a_last_modified >= COALESCE(:modified_after, a_last_modified)
              AND a_team_id = COALESCE(:team_id, a_team_id)
+             AND a_incident_contact = COALESCE(:incident_contact, a_incident_contact)
              AND a_active = COALESCE(:active, a_active)) as apps,
                  plainto_tsquery('english', COALESCE(:searchquery, '')) query
    WHERE query @@ vector
@@ -59,6 +64,7 @@ ORDER BY a_matched_rank DESC;
 --name: read-application
 SELECT a_id,
        a_team_id,
+       a_incident_contact,
        a_active,
        a_name,
        a_subtitle,
@@ -81,6 +87,7 @@ SELECT a_id,
 WITH application_update AS (
      UPDATE zk_data.application
         SET a_team_id             = :team_id,
+            a_incident_contact    = :incident_contact,
             a_active              = :active,
             a_name                = :name,
             a_subtitle            = :subtitle,
@@ -99,6 +106,7 @@ WITH application_update AS (
 INSERT INTO zk_data.application (
             a_id,
             a_team_id,
+            a_incident_contact,
             a_active,
             a_name,
             a_subtitle,
@@ -114,6 +122,7 @@ INSERT INTO zk_data.application (
             a_criticality_level)
      SELECT :id,
             :team_id,
+            :incident_contact,
             :active,
             :name,
             :subtitle,

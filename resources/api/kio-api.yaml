@@ -63,6 +63,11 @@ paths:
           description: "Only include apps of this team"
           type: string
           required: false
+        - name: incident_contact
+          in: query
+          description: "Only include apps with 24x7 support by the given contact/team"
+          type: string
+          required: false
         - name: active
           in: query
           description: "If true, include only active apps"
@@ -84,6 +89,10 @@ paths:
                   type: string
                   description: ID of the team, responsible for this application
                   example: stups
+                incident_contact:
+                  type: string
+                  description: 24x7 contact, e.g. team ID of on-call support team
+                  example: sre
                 active:
                   type: boolean
                   description: If this appliation is active, ie gets credentials
@@ -154,6 +163,10 @@ paths:
                 type: string
                 description: ID of the team, responsible for this application
                 example: stups
+              incident_contact:
+                type: string
+                description: 24x7 contact, e.g. team ID of on-call support team
+                example: sre
               active:
                 type: boolean
                 description: If the application is active
@@ -514,6 +527,10 @@ definitions:
         type: string
         description: ID of the team, responsible for this application
         example: stups
+      incident_contact:
+        type: string
+        description: 24x7 contact, e.g. team ID of on-call support team
+        example: sre
       active:
         type: boolean
         description: if the application is active
