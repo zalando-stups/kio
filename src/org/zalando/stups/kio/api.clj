@@ -85,11 +85,12 @@
 ;; applications
 
 (defn read-applications
-  [{:keys [search modified_before modified_after team_id active]} request {:keys [db]}]
+  [{:keys [search modified_before modified_after team_id incident_contact active]} request {:keys [db]}]
   (u/require-realms #{"employees" "services"} request)
   (let [conn {:connection db}
         params {:searchquery search
                 :team_id team_id
+                :incident_contact incident_contact
                 :active active
                 :modified_before (tcoerce/to-sql-time modified_before)
                 :modified_after  (tcoerce/to-sql-time modified_after)}]
@@ -139,7 +140,8 @@
 
 (defn create-or-update-application! [{:keys [application application_id]} request {:keys [db http-audit-logger]}]
   (let [uid (from-token request "uid")
-        defaults {:specification_url   nil
+        defaults {:incident_contact    nil
+                  :specification_url   nil
                   :documentation_url   nil
                   :subtitle            nil
                   :scm_url             nil

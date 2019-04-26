@@ -63,6 +63,11 @@ paths:
           description: "Only include apps of this team"
           type: string
           required: false
+        - name: incident_contact
+          in: query
+          description: "Only include apps with 24x7 support by the given contact/team"
+          type: string
+          required: false
         - name: active
           in: query
           description: "If true, include only active apps"
