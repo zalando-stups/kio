@@ -15,7 +15,7 @@ SELECT a_id,
    AND a_last_modified >= COALESCE(:modified_after, a_last_modified)
    AND a_active = COALESCE(:active, a_active)
    AND a_team_id = COALESCE(:team_id, a_team_id)
-   AND a_incident_contact = COALESCE(:incident_contact, a_incident_contact);
+   AND a_incident_contact IS NOT DISTINCT FROM COALESCE(:incident_contact, a_incident_contact);
 
 -- name: search-applications
   SELECT a_id,
@@ -55,7 +55,7 @@ SELECT a_id,
            WHERE a_last_modified <= COALESCE(:modified_before, a_last_modified)
              AND a_last_modified >= COALESCE(:modified_after, a_last_modified)
              AND a_team_id = COALESCE(:team_id, a_team_id)
-             AND a_incident_contact = COALESCE(:incident_contact, a_incident_contact)
+             AND a_incident_contact IS NOT DISTINCT FROM COALESCE(:incident_contact, a_incident_contact)
              AND a_active = COALESCE(:active, a_active)) as apps,
                  plainto_tsquery('english', COALESCE(:searchquery, '')) query
    WHERE query @@ vector
