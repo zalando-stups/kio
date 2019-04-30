@@ -1,15 +1,15 @@
 -- name: read-applications
-SELECT a_id,
-       a_team_id,
-       a_incident_contact,
-       a_active,
-       a_name,
-       a_subtitle,
-       a_service_url,
-       a_scm_url,
-       a_documentation_url,
-       a_specification_url,
-       a_last_modified
+SELECT a_id as id,
+       a_team_id as team_id,
+       a_incident_contact as incident_contact,
+       a_active as active,
+       a_name as name,
+       a_subtitle as subtitle,
+       a_service_url as service_url,
+       a_scm_url as scm_url,
+       a_documentation_url as documentation_url,
+       a_specification_url as specification_url,
+       a_last_modified as last_modified
   FROM zk_data.application
  WHERE a_last_modified <= COALESCE(:modified_before, a_last_modified)
    AND a_last_modified >= COALESCE(:modified_after, a_last_modified)
@@ -18,22 +18,22 @@ SELECT a_id,
    AND a_incident_contact IS NOT DISTINCT FROM COALESCE(:incident_contact, a_incident_contact);
 
 -- name: search-applications
-  SELECT a_id,
-         a_team_id,
-         a_incident_contact,
-         a_active,
-         a_name,
-         a_subtitle,
-         a_service_url,
-         a_scm_url,
-         a_documentation_url,
-         a_specification_url,
-         a_last_modified,
-         ts_rank_cd(vector, query) AS a_matched_rank,
+  SELECT a_id as id,
+         a_team_id as team_id,
+         a_incident_contact as incident_contact,
+         a_active as active,
+         a_name as name,
+         a_subtitle as subtitle,
+         a_service_url as service_url,
+         a_scm_url as scm_url,
+         a_documentation_url as documentation_url,
+         a_specification_url as specification_url,
+         a_last_modified as last_modified,
+         ts_rank_cd(vector, query) AS matched_rank,
          ts_headline('english', a_id || ' ' ||
                                 a_name || ' ' ||
                                 COALESCE(a_subtitle, '') || ' ' ||
-                                COALESCE(a_description, ''), query) AS a_matched_description
+                                COALESCE(a_description, ''), query) AS matched_description
     FROM (SELECT a_id,
                  a_team_id,
                  a_incident_contact,
@@ -62,24 +62,24 @@ SELECT a_id,
 ORDER BY a_matched_rank DESC;
 
 --name: read-application
-SELECT a_id,
-       a_team_id,
-       a_incident_contact,
-       a_active,
-       a_name,
-       a_subtitle,
-       a_description,
-       a_service_url,
-       a_scm_url,
-       a_documentation_url,
-       a_specification_url,
-       a_specification_type,
-       a_criticality_level,
-       a_created,
-       a_created_by,
-       a_last_modified,
-       a_last_modified_by,
-       a_publicly_accessible
+SELECT a_id as id,
+       a_team_id as team_id,
+       a_incident_contact as incident_contact,
+       a_active as active,
+       a_name as name,
+       a_subtitle as subtitle,
+       a_description as description,
+       a_service_url as service_url,
+       a_scm_url as scm_url,
+       a_documentation_url as documentation_url,
+       a_specification_url as specification_url,
+       a_specification_type as specification_type,
+       a_criticality_level as criticality_level,
+       a_created as created,
+       a_created_by as created_by,
+       a_last_modified as last_modified,
+       a_last_modified_by as last_modified_by,
+       a_publicly_accessible as publicly_accessible
   FROM zk_data.application
  WHERE a_id = :id;
 
