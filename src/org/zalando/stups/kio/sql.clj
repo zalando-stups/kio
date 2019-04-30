@@ -28,19 +28,3 @@
 
 (defqueries "db/applications.sql")
 (generate-hystrix-commands)
-
-(def column-prefix-pattern #"[a-z]+_(.+)")
-
-(defn remove-prefix [m]
-  (->> m
-       name
-       (re-find column-prefix-pattern)
-       second
-       keyword))
-
-(defn strip-prefixes
-  "Removes the database field prefix."
-  [results]
-  (map (fn [result]
-          (into {} (map (fn [[k v]] [(remove-prefix k) v]) result)))
-       results))

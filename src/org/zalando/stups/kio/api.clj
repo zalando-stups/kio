@@ -98,13 +98,11 @@
       (do
         (log/debug "Read all applications.")
         (-> (sql/cmd-read-applications params conn)
-            (sql/strip-prefixes)
             (response)
             (content-type-json)))
       (do
         (log/debug "Search in applications with term %s." search)
         (-> (sql/cmd-search-applications params conn)
-            (sql/strip-prefixes)
             (response)
             (content-type-json))))))
 
@@ -113,7 +111,6 @@
   [application_id db]
   (-> (sql/cmd-read-application {:id application_id}
                                 {:connection db})
-      (sql/strip-prefixes)
       (first)))
 
 (defn enrich-application
@@ -133,7 +130,6 @@
   (-> (sql/cmd-read-application
         {:id application_id}
         {:connection db})
-      (sql/strip-prefixes)
       (enrich-applications)
       (single-response)
       (content-type-json)))
