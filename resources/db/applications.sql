@@ -59,7 +59,7 @@ SELECT a_id as id,
              AND a_active = COALESCE(:active, a_active)) as apps,
                  plainto_tsquery('english', COALESCE(:searchquery, '')) query
    WHERE query @@ vector
-ORDER BY a_matched_rank DESC;
+ORDER BY matched_rank DESC;
 
 --name: read-application
 SELECT a_id as id,
