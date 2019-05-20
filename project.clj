@@ -11,7 +11,8 @@
                  [org.zalando.stups/friboo "1.13.0"]
                  [clj-time "0.13.0"]
                  [org.zalando.stups/tokens "0.11.0-beta-2"]
-                 [yesql "0.5.3"]]
+                 [yesql "0.5.3"]
+                 [org.clojure/core.memoize "0.7.1"]]
 
   :managed-dependencies [[org.flatland/ordered "1.5.7"]
                          [marick/suchwow "6.0.2"]]

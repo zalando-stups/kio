@@ -27,7 +27,8 @@
             [io.sarnowski.swagger1st.util.api :as api]
             [ring.util.response :refer :all]
             [clojure.string :as str]
-            [clojure.java.jdbc :refer [with-db-transaction]]))
+            [clojure.java.jdbc :refer [with-db-transaction]]
+            [clojure.core.memoize :as memo]))
 
 ; define the API component and its dependencies
 (def-http-component API "api/kio-api.yaml" [db http-audit-logger app-metrics] :dependencies-as-map true)
@@ -84,10 +85,19 @@
 
 ;; applications
 
+;;https://github.com/clojure/core.memoize/blob/master/docs/Using.md#overriding-the-cache-keys
+(defn ^{:clojure.core.memoize/args-fn first}
+  run-db-query
+  [params fn db-spec]
+  (fn params {:connection db-spec}))
+
+(def run-db-query-memo
+  (memo/ttl #'run-db-query :ttl/threshold 60000))
+
 (defn read-applications
   [{:keys [search modified_before modified_after team_id incident_contact active]} request {:keys [db]}]
-  (u/require-realms #{"employees" "services"} request)
-  (let [conn {:connection db}
+  (let [realm (u/require-realms #{"employees" "services"} request)
+        conn {:connection db}
         params {:searchquery search
                 :team_id team_id
                 :incident_contact incident_contact
@@ -97,7 +107,9 @@
     (if (nil? search)
       (do
         (log/debug "Read all applications.")
-        (-> (sql/cmd-read-applications params conn)
+        (-> (if (#{"employees"} realm)
+              (sql/cmd-read-applications params conn)
+              (run-db-query-memo params sql/cmd-read-applications db))
             (response)
             (content-type-json)))
       (do
@@ -125,11 +137,10 @@
   (map enrich-application applications))
 
 (defn read-application [{:keys [application_id]} request {:keys [db]}]
-  (u/require-realms #{"employees" "services"} request)
   (log/debug "Read application %s." application_id)
-  (-> (sql/cmd-read-application
-        {:id application_id}
-        {:connection db})
+  (-> (if (#{"employees"} (u/require-realms #{"employees" "services"} request))
+        (sql/cmd-read-application {:id application_id} {:connection db})
+        (run-db-query-memo {:id application_id} sql/cmd-read-application db))
       (enrich-applications)
       (single-response)
       (content-type-json)))
