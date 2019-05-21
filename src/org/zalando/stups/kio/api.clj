@@ -86,7 +86,7 @@
 ;; applications
 
 ;;https://github.com/clojure/core.memoize/blob/master/docs/Using.md#overriding-the-cache-keys
-(defn ^{:clojure.core.memoize/args-fn #(merge (first %) (-> (second %) meta :name))}
+(defn ^{:clojure.core.memoize/args-fn #(list (first %) (-> (second %) type str))}
   run-db-query
   [params function-name db-spec]
   (function-name params {:connection db-spec}))
