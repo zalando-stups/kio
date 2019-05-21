@@ -2,8 +2,7 @@
   (:require [midje.sweet :refer :all]
             [clojure.test :refer [deftest]]
             [com.stuartsierra.component :as component]
-            [org.zalando.stups.kio.sql :as sql])
-  (:import (org.flywaydb.core Flyway)))
+            [org.zalando.stups.kio.sql :as sql]))
 
 (def config {:classname   "org.postgresql.Driver"
              :subprotocol "postgresql"

@@ -114,7 +114,9 @@
             (content-type-json)))
       (do
         (log/debug "Search in applications with term %s." search)
-        (-> (sql/cmd-search-applications params conn)
+        (-> (if (#{"employees"} realm)
+              (sql/cmd-search-applications params conn)
+              (run-db-query-memo params sql/cmd-search-applications db))
             (response)
             (content-type-json))))))
 
