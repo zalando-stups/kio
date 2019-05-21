@@ -88,8 +88,8 @@
 ;;https://github.com/clojure/core.memoize/blob/master/docs/Using.md#overriding-the-cache-keys
 (defn ^{:clojure.core.memoize/args-fn first}
   run-db-query
-  [params fn db-spec]
-  (fn params {:connection db-spec}))
+  [params function-name db-spec]
+  (function-name params {:connection db-spec}))
 
 (def run-db-query-memo
   (memo/ttl #'run-db-query :ttl/threshold 60000))
