@@ -6,8 +6,7 @@
             [org.zalando.stups.kio.api :as api]
             [org.zalando.stups.kio.metrics :as metrics]
             [org.zalando.stups.friboo.user :as u]
-            [org.zalando.stups.friboo.auth :as auth]
-            [clojure.java.jdbc :as jdbc]))
+            [org.zalando.stups.friboo.auth :as auth]))
 
 (defn with-status?
   "Checks if exception has status-code in ex-data"
@@ -31,6 +30,12 @@
         .request. =contains=> {:tokeninfo {"uid"   "nikolaus"
                                            "realm" "employees"}}
         (sql/cmd-read-applications anything {:connection .db.}) => []))
+    (fact "applications without search - service request [will fail on rerun in the same REPL => db call is memoized]"
+      (api/read-applications {:team_id "foo"} .request. {:db .db.}) =not=> (throws Exception)
+      (provided
+        .request. =contains=> {:tokeninfo {"uid"   "nikolaus"
+                                           "realm" "services"}}
+        (sql/cmd-read-applications anything {:connection .db.}) => []))
     (fact "applications with search"
       (api/read-applications .params. .request. {:db .db.}) =not=> (throws Exception)
       (provided
@@ -38,11 +43,24 @@
                                            "realm" "employees"}}
         .params. =contains=> {:search "foo bar"}
         (sql/cmd-search-applications anything {:connection .db.}) => []))
+    (fact "applications with search - service request [will fail on rerun in the same REPL => db call is memoized]"
+      (api/read-applications .params. .request. {:db .db.}) =not=> (throws Exception)
+      (provided
+        .request. =contains=> {:tokeninfo {"uid"   "nikolaus"
+                                           "realm" "services"}}
+        .params. =contains=> {:search "foo bar"}
+        (sql/cmd-search-applications anything {:connection .db.}) => []))
     (fact "single app"
       (api/read-application nil .request. {:db .db.}) =not=> (throws Exception)
       (provided
         .request. =contains=> {:tokeninfo {"uid"   "nikolaus"
                                            "realm" "employees"}}
+        (sql/cmd-read-application anything {:connection .db.}) => {}))
+    (fact "single app - service request [will fail on rerun in the same REPL => db call is memoized]"
+      (api/read-application {:application_id "foo"} .request. {:db .db.}) =not=> (throws Exception)
+      (provided
+        .request. =contains=> {:tokeninfo {"uid"   "nikolaus"
+                                           "realm" "services"}}
         (sql/cmd-read-application anything {:connection .db.}) => {}))))
 
 (deftest ^:unit test-write-application
