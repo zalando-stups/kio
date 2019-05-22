@@ -23,7 +23,7 @@
       (api/enrich-application {:criticality_level 3}) => (contains {:required_approvers 2}))))
 
 (deftest ^:unit test-read-access
-  (facts "people without a team can read stuff"
+  (facts "read stuff"
     (fact "applications without search"
       (api/read-applications {} .request. {:db .db.}) =not=> (throws Exception)
       (provided
@@ -31,11 +31,11 @@
                                            "realm" "employees"}}
         (sql/cmd-read-applications anything {:connection .db.}) => []))
     (fact "applications without search - service request [will fail on rerun in the same REPL => db call is memoized]"
-      (api/read-applications {:team_id "foo"} .request. {:db .db.}) =not=> (throws Exception)
+      (api/read-applications {:team_id "foo"} .request. {:db .db.}) => (contains {:body "[{\"test\":1}]"})
       (provided
         .request. =contains=> {:tokeninfo {"uid"   "nikolaus"
                                            "realm" "services"}}
-        (sql/cmd-read-applications anything {:connection .db.}) => []))
+        (sql/cmd-read-applications anything {:connection .db.}) => [{:test 1}]))
     (fact "applications with search"
       (api/read-applications .params. .request. {:db .db.}) =not=> (throws Exception)
       (provided
@@ -51,17 +51,23 @@
         .params. =contains=> {:search "foo bar"}
         (sql/cmd-search-applications anything {:connection .db.}) => []))
     (fact "single app"
-      (api/read-application nil .request. {:db .db.}) =not=> (throws Exception)
+      (api/read-application nil .request. {:db .db.}) => (contains {:body {}})
       (provided
         .request. =contains=> {:tokeninfo {"uid"   "nikolaus"
                                            "realm" "employees"}}
-        (sql/cmd-read-application anything {:connection .db.}) => {}))
+        (sql/cmd-read-application anything {:connection .db.}) => []))
     (fact "single app - service request [will fail on rerun in the same REPL => db call is memoized]"
-      (api/read-application {:application_id "foo"} .request. {:db .db.}) =not=> (throws Exception)
+      (api/read-application {:application_id "foo"} .request. {:db .db.}) => (contains {:body "{\"id\":\"foo\",\"required_approvers\":2}"})
       (provided
         .request. =contains=> {:tokeninfo {"uid"   "nikolaus"
                                            "realm" "services"}}
-        (sql/cmd-read-application anything {:connection .db.}) => {}))))
+        (sql/cmd-read-application anything {:connection .db.}) => [{:id "foo"}]))
+    (fact "single app - service request 404 [will fail on rerun in the same REPL => db call is memoized]"
+      (api/read-application {:application_id "foo1"} .request. {:db .db.}) => (contains {:body {}})
+      (provided
+        .request. =contains=> {:tokeninfo {"uid"   "nikolaus"
+                                           "realm" "services"}}
+        (sql/cmd-read-application anything {:connection .db.}) => []))))
 
 (deftest ^:unit test-write-application
   (facts "writing applications"
