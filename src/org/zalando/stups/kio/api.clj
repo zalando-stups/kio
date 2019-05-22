@@ -98,7 +98,7 @@ run-db-query
 
 (defn read-applications
   [{:keys [search modified_before modified_after team_id incident_contact active cached db_json]} request {:keys [db]}]
-  ;(u/require-realms #{"employees" "services"} request)
+  (u/require-realms #{"employees" "services"} request)
   (let [conn   {:connection db}
         params {:searchquery      search
                 :team_id          team_id

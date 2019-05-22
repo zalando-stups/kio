@@ -73,7 +73,7 @@ paths:
           description: "If true, include only active apps"
           type: boolean
           required: false
-        - name: cache
+        - name: cached
           in: query
           description: "If true, cache is used to serve results"
           type: boolean
