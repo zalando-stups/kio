@@ -1,4 +1,3 @@
-
 ; Copyright 2015 Zalando SE
 ;
 ; Licensed under the Apache License, Version 2.0 (the "License")
@@ -28,7 +27,8 @@
             [ring.util.response :refer :all]
             [clojure.string :as str]
             [clojure.java.jdbc :refer [with-db-transaction]]
-            [clojure.core.memoize :as memo]))
+            [clojure.core.memoize :as memo]
+            [cheshire.core :as json]))
 
 ; define the API component and its dependencies
 (def-http-component API "api/kio-api.yaml" [db http-audit-logger app-metrics] :dependencies-as-map true)
@@ -57,9 +57,9 @@
 (defn is-admin-in-realm?
   [uid realm {:keys [configuration]}]
   (when (and uid realm)
-    (let [uid-with-realm (str realm "/" uid)
+    (let [uid-with-realm          (str realm "/" uid)
           allowed-uids-with-realm (or (:admin-users configuration) "")
-          allowed (set (str/split allowed-uids-with-realm #","))]
+          allowed                 (set (str/split allowed-uids-with-realm #","))]
       (allowed uid-with-realm))))
 
 (defn require-write-authorization
@@ -69,12 +69,12 @@
   [request team]
   (require-uid request)
 
-  (let [realm (str "/" (u/require-realms #{"employees" "services"} request))
-        uid (from-token request "uid")
+  (let [realm     (str "/" (u/require-realms #{"employees" "services"} request))
+        uid       (from-token request "uid")
         is-admin? (is-admin-in-realm? uid realm request)]
     (when-not is-admin?
-      (let [has-auth? (auth/get-auth request team)
-            is-robot? (= "/services" realm)
+      (let [has-auth?  (auth/get-auth request team)
+            is-robot?  (= "/services" realm)
             has-scope? (set (from-token request "scope"))]
         (when-not has-auth?
           (api/throw-error 403 "Unauthorized"))
@@ -86,24 +86,49 @@
 ;; applications
 
 ;;https://github.com/clojure/core.memoize/blob/master/docs/Using.md#overriding-the-cache-keys
-(defn ^{:clojure.core.memoize/args-fn #(list (first %) (-> (second %) type str))}
-  run-db-query
+(defn ^{:clojure.core.memoize/args-fn #(list (first %) (-> (second %) type))}
+run-db-query
   [params function-name db-spec]
-  (function-name params {:connection db-spec}))
+  (let [result (function-name params {:connection db-spec})]
+    (when (not-empty result)
+      (json/generate-string result))))
 
 (def run-db-query-memo
   (memo/ttl #'run-db-query :ttl/threshold 60000))
 
+(defn enrich-application
+  "Adds calculated field(s) to an application"
+  [application]
+  (assoc application :required_approvers (if (= (:criticality_level application) 1) 1 2)))
+
+(defn enrich-applications
+  [applications]
+  (map enrich-application applications))
+
+(defn ^{:clojure.core.memoize/args-fn first}
+run-get-app-db-query
+  "get a single app as json string list"
+  [params db-spec]
+  (let [result (-> (sql/cmd-read-application params {:connection db-spec})
+                   (enrich-applications)
+                   (first))]
+    (if result
+      (list (json/generate-string result))
+      (list))))
+
+(def run-db-query-get-single-app-memo
+  (memo/ttl #'run-get-app-db-query :ttl/threshold 60000))
+
 (defn read-applications
   [{:keys [search modified_before modified_after team_id incident_contact active]} request {:keys [db]}]
-  (let [realm (u/require-realms #{"employees" "services"} request)
-        conn {:connection db}
-        params {:searchquery search
-                :team_id team_id
+  (let [realm  (u/require-realms #{"employees" "services"} request)
+        conn   {:connection db}
+        params {:searchquery      search
+                :team_id          team_id
                 :incident_contact incident_contact
-                :active active
-                :modified_before (tcoerce/to-sql-time modified_before)
-                :modified_after  (tcoerce/to-sql-time modified_after)}]
+                :active           active
+                :modified_before  (tcoerce/to-sql-time modified_before)
+                :modified_after   (tcoerce/to-sql-time modified_after)}]
     (if (nil? search)
       (do
         (log/debug "Read all applications.")
@@ -127,38 +152,26 @@
                                 {:connection db})
       (first)))
 
-(defn enrich-application
-  "Adds calculated field(s) to an application"
-  [application]
-  (assoc application :required_approvers (if (= 1 (:criticality_level application))
-                                           1
-                                           2)))
-
-(defn enrich-applications
-  [applications]
-  (map enrich-application applications))
-
 (defn read-application [{:keys [application_id]} request {:keys [db]}]
   (log/debug "Read application %s." application_id)
   (-> (if (#{"employees"} (u/require-realms #{"employees" "services"} request))
-        (sql/cmd-read-application {:id application_id} {:connection db})
-        (run-db-query-memo {:id application_id} sql/cmd-read-application db))
-      (enrich-applications)
+        (enrich-applications (sql/cmd-read-application {:id application_id} {:connection db}))
+        (run-db-query-get-single-app-memo {:id application_id} db))
       (single-response)
       (content-type-json)))
 
 (defn create-or-update-application! [{:keys [application application_id]} request {:keys [db http-audit-logger]}]
-  (let [uid (from-token request "uid")
-        defaults {:incident_contact    nil
-                  :specification_url   nil
-                  :documentation_url   nil
-                  :subtitle            nil
-                  :scm_url             nil
-                  :service_url         nil
-                  :description         nil
-                  :specification_type  nil
-                  :publicly_accessible false
-                  :criticality_level   2}
+  (let [uid                  (from-token request "uid")
+        defaults             {:incident_contact    nil
+                              :specification_url   nil
+                              :documentation_url   nil
+                              :subtitle            nil
+                              :scm_url             nil
+                              :service_url         nil
+                              :description         nil
+                              :specification_type  nil
+                              :publicly_accessible false
+                              :criticality_level   2}
         existing_application (load-application application_id db)]
 
     (if (nil? existing_application)
@@ -168,7 +181,7 @@
     (let [app-to-save (merge-with #(or %2 %1) defaults application {:id               application_id
                                                                     :last_modified_by uid
                                                                     :created_by       uid})
-          log-fn (:log-fn http-audit-logger)]
+          log-fn      (:log-fn http-audit-logger)]
       (sql/cmd-create-or-update-application!
         app-to-save
         {:connection db})
