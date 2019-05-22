@@ -96,33 +96,10 @@ run-db-query
 (def run-db-query-memo
   (memo/ttl #'run-db-query :ttl/threshold 60000))
 
-(defn enrich-application
-  "Adds calculated field(s) to an application"
-  [application]
-  (assoc application :required_approvers (if (= (:criticality_level application) 1) 1 2)))
-
-(defn enrich-applications
-  [applications]
-  (map enrich-application applications))
-
-(defn ^{:clojure.core.memoize/args-fn first}
-run-get-app-db-query
-  "get a single app as json string list"
-  [params db-spec]
-  (let [result (-> (sql/cmd-read-application params {:connection db-spec})
-                   (enrich-applications)
-                   (first))]
-    (if result
-      (list (json/generate-string result))
-      (list))))
-
-(def run-db-query-get-single-app-memo
-  (memo/ttl #'run-get-app-db-query :ttl/threshold 60000))
-
 (defn read-applications
-  [{:keys [search modified_before modified_after team_id incident_contact active]} request {:keys [db]}]
-  (let [realm  (u/require-realms #{"employees" "services"} request)
-        conn   {:connection db}
+  [{:keys [search modified_before modified_after team_id incident_contact active cached db_json]} request {:keys [db]}]
+  ;(u/require-realms #{"employees" "services"} request)
+  (let [conn   {:connection db}
         params {:searchquery      search
                 :team_id          team_id
                 :incident_contact incident_contact
@@ -132,16 +109,21 @@ run-get-app-db-query
     (if (nil? search)
       (do
         (log/debug "Read all applications.")
-        (-> (if (#{"employees"} realm)
-              (sql/cmd-read-applications params conn)
-              (run-db-query-memo params sql/cmd-read-applications db))
+        (-> (if cached
+              (run-db-query-memo params sql/cmd-read-applications db)
+              (if db_json
+                (-> (sql/cmd-read-applications-json params conn)
+                    (first)
+                    (:apps)
+                    (str))
+                (sql/cmd-read-applications params conn)))
             (response)
             (content-type-json)))
       (do
         (log/debug "Search in applications with term %s." search)
-        (-> (if (#{"employees"} realm)
-              (sql/cmd-search-applications params conn)
-              (run-db-query-memo params sql/cmd-search-applications db))
+        (-> (if cached
+              (run-db-query-memo params sql/cmd-search-applications db)
+              (sql/cmd-search-applications params conn))
             (response)
             (content-type-json))))))
 
@@ -152,11 +134,20 @@ run-get-app-db-query
                                 {:connection db})
       (first)))
 
+(defn enrich-application
+  "Adds calculated field(s) to an application"
+  [application]
+  (assoc application :required_approvers (if (= (:criticality_level application) 1) 1 2)))
+
+(defn enrich-applications
+  [applications]
+  (map enrich-application applications))
+
 (defn read-application [{:keys [application_id]} request {:keys [db]}]
+  (u/require-realms #{"employees" "services"} request)
   (log/debug "Read application %s." application_id)
-  (-> (if (#{"employees"} (u/require-realms #{"employees" "services"} request))
-        (enrich-applications (sql/cmd-read-application {:id application_id} {:connection db}))
-        (run-db-query-get-single-app-memo {:id application_id} db))
+  (-> (sql/cmd-read-application {:id application_id} {:connection db})
+      (enrich-applications)
       (single-response)
       (content-type-json)))
 
