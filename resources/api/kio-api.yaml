@@ -80,7 +80,7 @@ paths:
           required: false
         - name: db_json
           in: query
-          description: "If true, json id serialized on db side"
+          description: "If true, json is serialized on db side"
           type: boolean
           required: false
       responses:
