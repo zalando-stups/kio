@@ -63,7 +63,7 @@
                                            "realm" "services"}}
         (sql/cmd-read-application anything {:connection .db.}) => [{:id "foo"}]))
     (fact "single app - service request 404 [will fail on rerun in the same REPL => db call is memoized]"
-      (api/read-application {:application_id "foo1"} .request. {:db .db.}) => (contains {:body {}})
+      (api/read-application {:application_id "foo1"} .request. {:db .db.}) => (contains {:body {} :status 404})
       (provided
         .request. =contains=> {:tokeninfo {"uid"   "nikolaus"
                                            "realm" "services"}}
