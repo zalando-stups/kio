@@ -17,6 +17,28 @@ SELECT a_id as id,
    AND a_team_id = COALESCE(:team_id, a_team_id)
    AND a_incident_contact IS NOT DISTINCT FROM COALESCE(:incident_contact, a_incident_contact);
 
+-- name: read-applications-json
+SELECT array_to_json(array_agg(row_to_json(t))) AS apps
+FROM (
+         SELECT a_id as id,
+                a_team_id as team_id,
+                a_incident_contact as incident_contact,
+                a_active as active,
+                a_name as name,
+                a_subtitle as subtitle,
+                a_service_url as service_url,
+                a_scm_url as scm_url,
+                a_documentation_url as documentation_url,
+                a_specification_url as specification_url,
+                a_last_modified as last_modified
+         FROM zk_data.application
+         WHERE a_last_modified <= COALESCE(:modified_before, a_last_modified)
+           AND a_last_modified >= COALESCE(:modified_after, a_last_modified)
+           AND a_active = COALESCE(:active, a_active)
+           AND a_team_id = COALESCE(:team_id, a_team_id)
+           AND a_incident_contact IS NOT DISTINCT FROM COALESCE(:incident_contact, a_incident_contact)
+     ) t;
+
 -- name: search-applications
   SELECT a_id as id,
          a_team_id as team_id,

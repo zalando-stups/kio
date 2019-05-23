@@ -73,6 +73,16 @@ paths:
           description: "If true, include only active apps"
           type: boolean
           required: false
+        - name: cached
+          in: query
+          description: "If true, cache is used to serve results"
+          type: boolean
+          required: false
+        - name: db_json
+          in: query
+          description: "If true, json is serialized on db side"
+          type: boolean
+          required: false
       responses:
         200:
           description: List of all applications
