@@ -86,18 +86,18 @@
 ;; applications
 
 ;;https://github.com/clojure/core.memoize/blob/master/docs/Using.md#overriding-the-cache-keys
-(defn ^{:clojure.core.memoize/args-fn #(list (first %) (-> (second %) type))}
-run-db-query
-  [params function-name db-spec]
-  (let [result (function-name params {:connection db-spec})]
+(defn ^{:clojure.core.memoize/args-fn first}
+read-applications-into-string
+  [params db-spec]
+  (let [result (sql/cmd-read-applications params {:connection db-spec})]
     (when (not-empty result)
       (json/generate-string result))))
 
-(def run-db-query-memo
-  (memo/ttl #'run-db-query :ttl/threshold 60000))
+(def read-application-memo
+  (memo/ttl #'read-applications-into-string :ttl/threshold 120000))
 
 (defn read-applications
-  [{:keys [search modified_before modified_after team_id incident_contact active cached db_json]} request {:keys [db]}]
+  [{:keys [search modified_before modified_after team_id incident_contact active]} request {:keys [db]}]
   (u/require-realms #{"employees" "services"} request)
   (let [conn   {:connection db}
         params {:searchquery      search
@@ -109,21 +109,14 @@ run-db-query
     (if (nil? search)
       (do
         (log/debug "Read all applications.")
-        (-> (if cached
-              (run-db-query-memo params sql/cmd-read-applications db)
-              (if db_json
-                (-> (sql/cmd-read-applications-json params conn)
-                    (first)
-                    (:apps)
-                    (str))
-                (sql/cmd-read-applications params conn)))
+        (-> (if (and (nil? team_id) (nil? incident_contact))
+              (read-application-memo params db)
+              (sql/cmd-read-applications params conn))
             (response)
             (content-type-json)))
       (do
         (log/debug "Search in applications with term %s." search)
-        (-> (if cached
-              (run-db-query-memo params sql/cmd-search-applications db)
-              (sql/cmd-search-applications params conn))
+        (-> (sql/cmd-search-applications params conn)
             (response)
             (content-type-json))))))
 
