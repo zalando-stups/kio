@@ -24,8 +24,8 @@
 
 (deftest ^:unit test-read-access
   (facts "read stuff"
-    (fact "applications without search"
-      (api/read-applications {} .request. {:db .db.}) =not=> (throws Exception)
+    (fact "applications without search - cached empty response [will fail on rerun in the same REPL => db call is memoized]"
+      (api/read-applications {} .request. {:db .db.}) =not=> (contains {:body []})
       (provided
         .request. =contains=> {:tokeninfo {"uid"   "nikolaus"
                                            "realm" "employees"}}
@@ -36,18 +36,6 @@
         .request. =contains=> {:tokeninfo {"uid"   "nikolaus"
                                            "realm" "services"}}
         (sql/cmd-read-applications anything {:connection .db.}) => [{:test 1}]))
-    (fact "applications without search - service request cached [will fail on rerun in the same REPL => db call is memoized]"
-      (api/read-applications {:team_id "foo_cache" :cached true} .request. {:db .db.}) => (contains {:body "[{\"test\":1}]"})
-      (provided
-        .request. =contains=> {:tokeninfo {"uid"   "nikolaus"
-                                           "realm" "services"}}
-        (sql/cmd-read-applications anything {:connection .db.}) => [{:test 1}]))
-    (fact "applications without search - service request db_json"
-      (api/read-applications {:team_id "foo" :db_json true} .request. {:db .db.}) => (contains {:body "[{:id \"foo\"}]"})
-      (provided
-        .request. =contains=> {:tokeninfo {"uid"   "nikolaus"
-                                           "realm" "services"}}
-        (sql/cmd-read-applications-json anything {:connection .db.}) => [{:apps [{:id "foo"}]}]))
     (fact "applications with search"
       (api/read-applications .params. .request. {:db .db.}) =not=> (throws Exception)
       (provided
@@ -55,8 +43,8 @@
                                            "realm" "employees"}}
         .params. =contains=> {:search "foo bar"}
         (sql/cmd-search-applications anything {:connection .db.}) => []))
-    (fact "applications with search - service request [will fail on rerun in the same REPL => db call is memoized]"
-      (api/read-applications .params. .request. {:db .db.}) =not=> (throws Exception)
+    (fact "applications with search"
+      (api/read-applications .params. .request. {:db .db.}) => (contains {:body []})
       (provided
         .request. =contains=> {:tokeninfo {"uid"   "nikolaus"
                                            "realm" "services"}}
