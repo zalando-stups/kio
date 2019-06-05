@@ -77,6 +77,7 @@
                                            "realm" "/employees"}}
         (api/load-application .app-id. .db.) => {:team_id .db-team-id.}
         (sql/cmd-create-or-update-application! anything {:connection .db.}) => nil
+        (api/team-exists? .request. .api-team-id.) => true
         (api/require-write-authorization .request. .db-team-id.) => nil))
 
     (fact "when creating application, the team in body is compared"
@@ -91,6 +92,7 @@
                                            "realm" "/employees"}}
         (api/load-application .app-id. .db.) => nil
         (sql/cmd-create-or-update-application! anything {:connection .db.}) => nil
+        (api/team-exists? .request. .api-team-id.) => true
         (api/require-write-authorization .request. .api-team-id.) => nil))))
 
 (deftest ^:unit test-require-write-access
