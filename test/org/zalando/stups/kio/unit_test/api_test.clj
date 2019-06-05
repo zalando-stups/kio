@@ -85,15 +85,42 @@
       (provided
         .logger. =contains=> {:log-fn identity}
         .params. =contains=> {:application_id .app-id.
-                              :application    {:team_id .api-team-id.
+                              :application    {:team_id "team-team"
                                                :active  true
                                                :name    "test"}}
         .request. =contains=> {:tokeninfo {"uid"   "nikolaus"
                                            "realm" "/employees"}}
         (api/load-application .app-id. .db.) => nil
         (sql/cmd-create-or-update-application! anything {:connection .db.}) => nil
-        (api/team-exists? .request. .api-team-id.) => true
-        (api/require-write-authorization .request. .api-team-id.) => nil))))
+        (api/team-exists? .request. "team-team") => true
+        (api/require-write-authorization .request. "team-team") => nil))
+
+    (fact "when creating/updating application, the team is checked"
+      (api/create-or-update-application! .params. .request. {:db .db. :http-audit-logger .logger.}) => (throws Exception)
+      (provided
+        .logger. =contains=> {:log-fn identity}
+        .params. =contains=> {:application_id .app-id.
+                              :application    {:team_id nil
+                                               :active  true
+                                               :name    "test"}}
+        .request. =contains=> {:tokeninfo {"uid"   "nikolaus"
+                                           "realm" "/employees"}}
+        (api/load-application .app-id. .db.) => nil))
+
+    (fact "when creating/updating application, the team is checked"
+      (api/create-or-update-application! .params. .request. {:db .db. :http-audit-logger .logger.}) => (throws Exception)
+      (provided
+        .logger. =contains=> {:log-fn identity}
+        .params. =contains=> {:application_id .app-id.
+                              :application    {:team_id " "
+                                               :active  true
+                                               :name    "test"}}
+        .request. =contains=> {:configuration {:magnificent-url .magnificent-url.}
+                               :tokeninfo {"uid"   "nikolaus"
+                                           "realm" "/employees"}}
+        (api/load-application .app-id. .db.) => nil))
+
+    ))
 
 (deftest ^:unit test-require-write-access
   (facts "write access"

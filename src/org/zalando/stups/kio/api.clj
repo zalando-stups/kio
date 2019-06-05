@@ -146,15 +146,16 @@ read-applications-into-string
       (content-type-json)))
 
 (defn team-exists? [request team]
-  (let [magnificent-url (get-in request [:configuration :magnificent-url])
-        token           (get-in request [:tokeninfo "access_token"])
-        response        (http/get
-                          (str magnificent-url "/teams/" team)
-                          {:content-type     :json
-                           :oauth-token      token
-                           :throw-exceptions false})
-        status          (:status response)]
-    (= 200 status)))
+  (when-not (str/blank? team)
+    (let [magnificent-url (get-in request [:configuration :magnificent-url])
+          token           (get-in request [:tokeninfo "access_token"])
+          response        (http/get
+                            (str magnificent-url "/teams/" team)
+                            {:content-type     :json
+                             :oauth-token      token
+                             :throw-exceptions false})
+          status          (:status response)]
+      (= 200 status))))
 
 (defn create-or-update-application! [{:keys [application application_id]} request {:keys [db http-audit-logger]}]
   (let [uid                  (from-token request "uid")
@@ -175,7 +176,6 @@ read-applications-into-string
     (if (nil? existing_application)
       (require-write-authorization request team_id)
       (require-write-authorization request existing_team_id))
-
 
     (if (or (= team_id existing_team_id)
             (team-exists? request (:team_id application)))
