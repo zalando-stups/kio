@@ -193,7 +193,8 @@ read-applications-into-string
         (response nil))
       (-> {:message (format "Team %s does not exist." team_id)}
           (response)
-          (status 400)))))
+          (status 400)
+          (content-type-json)))))
 
 (defn read-application-approvals [_ request {:keys [app-metrics]}]
   (metrics/mark-deprecation app-metrics :deprecation-application-approvals-get)
