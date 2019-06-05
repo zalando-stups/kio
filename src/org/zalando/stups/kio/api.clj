@@ -28,6 +28,7 @@
             [clojure.string :as str]
             [clojure.java.jdbc :refer [with-db-transaction]]
             [clojure.core.memoize :as memo]
+            [clj-http.client :as http]
             [cheshire.core :as json]))
 
 ; define the API component and its dependencies
@@ -144,6 +145,17 @@ read-applications-into-string
       (single-response)
       (content-type-json)))
 
+(defn team-exists? [request team]
+  (let [magnificent-url (get-in request [:configuration :magnificent-url])
+        token           (get-in request [:tokeninfo "access_token"])
+        response        (http/get
+                          (str magnificent-url "/teams/" team)
+                          {:content-type     :json
+                           :oauth-token      token
+                           :throw-exceptions false})
+        status          (:status response)]
+    (= 200 status)))
+
 (defn create-or-update-application! [{:keys [application application_id]} request {:keys [db http-audit-logger]}]
   (let [uid                  (from-token request "uid")
         defaults             {:incident_contact    nil
@@ -156,24 +168,32 @@ read-applications-into-string
                               :specification_type  nil
                               :publicly_accessible false
                               :criticality_level   2}
-        existing_application (load-application application_id db)]
+        existing_application (load-application application_id db)
+        existing_team_id     (:team_id existing_application)
+        team_id              (:team_id application)]
 
     (if (nil? existing_application)
-      (require-write-authorization request (:team_id application))
-      (require-write-authorization request (:team_id existing_application)))
+      (require-write-authorization request team_id)
+      (require-write-authorization request existing_team_id))
 
-    (let [app-to-save (merge-with #(or %2 %1) defaults application {:id               application_id
-                                                                    :last_modified_by uid
-                                                                    :created_by       uid})
-          log-fn      (:log-fn http-audit-logger)]
-      (sql/cmd-create-or-update-application!
-        app-to-save
-        {:connection db})
-      (log-fn (audit/app-modified
-                (tokeninfo request)
-                app-to-save)))
-    (log/audit "Created/updated application %s using data %s." application_id application)
-    (response nil)))
+
+    (if (or (= team_id existing_team_id)
+            (team-exists? request (:team_id application)))
+      (let [app-to-save (merge-with #(or %2 %1) defaults application {:id               application_id
+                                                                      :last_modified_by uid
+                                                                      :created_by       uid})
+            log-fn      (:log-fn http-audit-logger)]
+        (sql/cmd-create-or-update-application!
+          app-to-save
+          {:connection db})
+        (log-fn (audit/app-modified
+                  (tokeninfo request)
+                  app-to-save))
+        (log/audit "Created/updated application %s using data %s." application_id application)
+        (response nil))
+      (-> {:message (format "Team %s does not exist.")}
+          (response)
+          (status 400)))))
 
 (defn read-application-approvals [_ request {:keys [app-metrics]}]
   (metrics/mark-deprecation app-metrics :deprecation-application-approvals-get)
