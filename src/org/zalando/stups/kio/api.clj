@@ -191,7 +191,7 @@ read-applications-into-string
                   app-to-save))
         (log/audit "Created/updated application %s using data %s." application_id application)
         (response nil))
-      (-> {:message (format "Team %s does not exist.")}
+      (-> {:message (format "Team %s does not exist." team_id)}
           (response)
           (status 400)))))
 
