@@ -179,9 +179,9 @@ read-applications-into-string
 
     (if (or (= team_id existing_team_id)
             (team-exists? request (:team_id application)))
-      (let [app-to-save (merge-with #(or %2 %1) defaults application {:id               application_id
-                                                                      :last_modified_by uid
-                                                                      :created_by       uid})
+      (let [app-to-save (merge-with #(or %2 %1) (or existing_application defaults) application {:id               application_id
+                                                                                                :last_modified_by uid
+                                                                                                :created_by       uid})
             log-fn      (:log-fn http-audit-logger)]
         (sql/cmd-create-or-update-application!
           app-to-save
