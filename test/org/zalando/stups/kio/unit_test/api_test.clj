@@ -1,5 +1,5 @@
 (ns org.zalando.stups.kio.unit-test.api-test
-  (:require [clojure.test :refer [deftest]]
+  (:require [clojure.test :as t]
             [midje.sweet :refer :all]
             [org.zalando.stups.kio.core :refer [run]]
             [org.zalando.stups.kio.sql :as sql]
@@ -15,14 +15,14 @@
     (let [data (ex-data e)]
       (= status (:http-code data)))))
 
-(deftest ^:unit enrich-application
+(t/deftest ^:unit enrich-application
   (facts "enrich-application"
     (fact "it properly sets required_approvers"
       (api/enrich-application {:criticality_level 1}) => (contains {:required_approvers 1})
       (api/enrich-application {:criticality_level 2}) => (contains {:required_approvers 2})
       (api/enrich-application {:criticality_level 3}) => (contains {:required_approvers 2}))))
 
-(deftest ^:unit test-read-access
+(t/deftest ^:unit test-read-access
   (facts "read stuff"
     (fact "applications without search - cached empty response [will fail on rerun in the same REPL => db call is memoized]"
       (api/read-applications {} .request. {:db .db.}) =not=> (contains {:body []})
@@ -63,7 +63,7 @@
                                            "realm" "services"}}
         (sql/cmd-read-application anything {:connection .db.}) => []))))
 
-(deftest ^:unit test-write-application
+(t/deftest ^:unit test-write-application
   (facts "writing applications"
     (fact "when updating application, the team in db is compared"
       (api/create-or-update-application! .params. .request. {:db .db. :http-audit-logger .logger.}) =not=> (throws Exception)
@@ -101,6 +101,7 @@
         .logger. =contains=> {:log-fn identity}
         .params. =contains=> {:application_id .app-id.
                               :application    {:team_id nil
+                                               :id "test"
                                                :active  true
                                                :name    "test"}}
         .request. =contains=> {:tokeninfo {"uid"   "nikolaus"
@@ -113,16 +114,15 @@
         .logger. =contains=> {:log-fn identity}
         .params. =contains=> {:application_id .app-id.
                               :application    {:team_id " "
+                                               :id "test"
                                                :active  true
                                                :name    "test"}}
         .request. =contains=> {:configuration {:magnificent-url .magnificent-url.}
                                :tokeninfo {"uid"   "nikolaus"
                                            "realm" "/employees"}}
-        (api/load-application .app-id. .db.) => nil))
+        (api/load-application .app-id. .db.) => nil))))
 
-    ))
-
-(deftest ^:unit test-require-write-access
+(t/deftest ^:unit test-require-write-access
   (facts "write access"
     (fact "access is denied if the uid is missing"
       (api/require-write-authorization .request. .team.) => (throws Exception anything (with-status? 403))
@@ -272,3 +272,10 @@
         (metrics/mark-deprecation .app-metrics. :deprecation-version-approvals-put) => nil
         (api/load-application .application-id. .db.) => {:team_id .team-id.
                                                          :id      .application-id.})))))
+
+(t/deftest ^:unit merge-app-fields
+  (t/testing "can toggle the active status"
+    (t/is (= {:active false}
+             (api/merge-app-fields {:active true} {:active false})))
+    (t/is (= {:active true}
+             (api/merge-app-fields {:active false} {:active true})))))
