@@ -162,7 +162,7 @@
           (map? new-fields)]
    :post [(map? %)
           (seq %)]}
-  (merge-with #(or %2 %1) old-fields new-fields))
+  (merge old-fields new-fields))
 
 (defn default-fields [uid]
   {:incident_contact    nil
