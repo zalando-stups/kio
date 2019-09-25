@@ -71,11 +71,12 @@
         .logger. =contains=> {:log-fn identity}
         .params. =contains=> {:application_id .app-id.
                               :application    {:team_id .api-team-id.
+                                               :id .app-id.
                                                :active  true
                                                :name    "test"}}
         .request. =contains=> {:tokeninfo {"uid"   "nikolaus"
                                            "realm" "/employees"}}
-        (api/load-application .app-id. .db.) => {:team_id .db-team-id.}
+        (api/load-application .app-id. .db.) => {:team_id .db-team-id. :id .app-id.}
         (sql/cmd-create-or-update-application! anything {:connection .db.}) => nil
         (api/team-exists? .request. .api-team-id.) => true
         (api/require-write-authorization .request. .db-team-id.) => nil))
@@ -85,15 +86,16 @@
       (provided
         .logger. =contains=> {:log-fn identity}
         .params. =contains=> {:application_id .app-id.
-                              :application    {:team_id "team-team"
+                              :application    {:team_id .api-team-id.
+                                               :id .app-id.
                                                :active  true
                                                :name    "test"}}
         .request. =contains=> {:tokeninfo {"uid"   "nikolaus"
                                            "realm" "/employees"}}
         (api/load-application .app-id. .db.) => nil
         (sql/cmd-create-or-update-application! anything {:connection .db.}) => nil
-        (api/team-exists? .request. "team-team") => true
-        (api/require-write-authorization .request. "team-team") => nil))
+        (api/team-exists? .request. .api-team-id.) => true
+        (api/require-write-authorization .request. .api-team-id.) => nil))
 
     (fact "when creating/updating application, the team is checked"
       (api/create-or-update-application! .params. .request. {:db .db. :http-audit-logger .logger.}) => (throws Exception)
@@ -101,7 +103,7 @@
         .logger. =contains=> {:log-fn identity}
         .params. =contains=> {:application_id .app-id.
                               :application    {:team_id nil
-                                               :id "test"
+                                               :id .app-id.
                                                :active  true
                                                :name    "test"}}
         .request. =contains=> {:tokeninfo {"uid"   "nikolaus"
@@ -114,7 +116,7 @@
         .logger. =contains=> {:log-fn identity}
         .params. =contains=> {:application_id .app-id.
                               :application    {:team_id " "
-                                               :id "test"
+                                               :id .app-id.
                                                :active  true
                                                :name    "test"}}
         .request. =contains=> {:configuration {:magnificent-url .magnificent-url.}
