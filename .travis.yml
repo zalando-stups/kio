@@ -3,5 +3,6 @@ script:
   - lein clean
   - lein test
   - lein uberjar
+dist: trusty  # https://travis-ci.community/t/install-of-oracle-jdk-8-failing/3038/8
 jdk:
   - oraclejdk8
