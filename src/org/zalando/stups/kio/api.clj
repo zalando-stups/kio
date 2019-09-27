@@ -163,7 +163,7 @@
    :post [(map? %)]}
   (merge old-fields new-fields))
 
-(defn default-fields [uid]
+(defn default-fields [creator-user-id]
   {:incident_contact    nil
    :specification_url   nil
    :documentation_url   nil
@@ -174,7 +174,7 @@
    :specification_type  nil
    :publicly_accessible false
    :criticality_level   2
-   :created_by          uid})
+   :created_by          creator-user-id})
 
 (defn- value-not-nil? [[_ v]] (some? v))
 
