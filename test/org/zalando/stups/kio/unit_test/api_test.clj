@@ -1,5 +1,5 @@
 (ns org.zalando.stups.kio.unit-test.api-test
-  (:require [clojure.test :refer [deftest]]
+  (:require [clojure.test :as t]
             [midje.sweet :refer :all]
             [org.zalando.stups.kio.core :refer [run]]
             [org.zalando.stups.kio.sql :as sql]
@@ -15,14 +15,14 @@
     (let [data (ex-data e)]
       (= status (:http-code data)))))
 
-(deftest ^:unit enrich-application
+(t/deftest ^:unit enrich-application
   (facts "enrich-application"
     (fact "it properly sets required_approvers"
       (api/enrich-application {:criticality_level 1}) => (contains {:required_approvers 1})
       (api/enrich-application {:criticality_level 2}) => (contains {:required_approvers 2})
       (api/enrich-application {:criticality_level 3}) => (contains {:required_approvers 2}))))
 
-(deftest ^:unit test-read-access
+(t/deftest ^:unit test-read-access
   (facts "read stuff"
     (fact "applications without search - cached empty response [will fail on rerun in the same REPL => db call is memoized]"
       (api/read-applications {} .request. {:db .db.}) =not=> (contains {:body []})
@@ -63,7 +63,7 @@
                                            "realm" "services"}}
         (sql/cmd-read-application anything {:connection .db.}) => []))))
 
-(deftest ^:unit test-write-application
+(t/deftest ^:unit test-write-application
   (facts "writing applications"
     (fact "when updating application, the team in db is compared"
       (api/create-or-update-application! .params. .request. {:db .db. :http-audit-logger .logger.}) =not=> (throws Exception)
@@ -71,11 +71,12 @@
         .logger. =contains=> {:log-fn identity}
         .params. =contains=> {:application_id .app-id.
                               :application    {:team_id .api-team-id.
+                                               :id .app-id.
                                                :active  true
                                                :name    "test"}}
         .request. =contains=> {:tokeninfo {"uid"   "nikolaus"
                                            "realm" "/employees"}}
-        (api/load-application .app-id. .db.) => {:team_id .db-team-id.}
+        (api/load-application .app-id. .db.) => {:team_id .db-team-id. :id .app-id.}
         (sql/cmd-create-or-update-application! anything {:connection .db.}) => nil
         (api/team-exists? .request. .api-team-id.) => true
         (api/require-write-authorization .request. .db-team-id.) => nil))
@@ -85,15 +86,16 @@
       (provided
         .logger. =contains=> {:log-fn identity}
         .params. =contains=> {:application_id .app-id.
-                              :application    {:team_id "team-team"
+                              :application    {:team_id .api-team-id.
+                                               :id .app-id.
                                                :active  true
                                                :name    "test"}}
         .request. =contains=> {:tokeninfo {"uid"   "nikolaus"
                                            "realm" "/employees"}}
         (api/load-application .app-id. .db.) => nil
         (sql/cmd-create-or-update-application! anything {:connection .db.}) => nil
-        (api/team-exists? .request. "team-team") => true
-        (api/require-write-authorization .request. "team-team") => nil))
+        (api/team-exists? .request. .api-team-id.) => true
+        (api/require-write-authorization .request. .api-team-id.) => nil))
 
     (fact "when creating/updating application, the team is checked"
       (api/create-or-update-application! .params. .request. {:db .db. :http-audit-logger .logger.}) => (throws Exception)
@@ -101,6 +103,7 @@
         .logger. =contains=> {:log-fn identity}
         .params. =contains=> {:application_id .app-id.
                               :application    {:team_id nil
+                                               :id .app-id.
                                                :active  true
                                                :name    "test"}}
         .request. =contains=> {:tokeninfo {"uid"   "nikolaus"
@@ -113,16 +116,15 @@
         .logger. =contains=> {:log-fn identity}
         .params. =contains=> {:application_id .app-id.
                               :application    {:team_id " "
+                                               :id .app-id.
                                                :active  true
                                                :name    "test"}}
         .request. =contains=> {:configuration {:magnificent-url .magnificent-url.}
                                :tokeninfo {"uid"   "nikolaus"
                                            "realm" "/employees"}}
-        (api/load-application .app-id. .db.) => nil))
+        (api/load-application .app-id. .db.) => nil))))
 
-    ))
-
-(deftest ^:unit test-require-write-access
+(t/deftest ^:unit test-require-write-access
   (facts "write access"
     (fact "access is denied if the uid is missing"
       (api/require-write-authorization .request. .team.) => (throws Exception anything (with-status? 403))
@@ -272,3 +274,23 @@
         (metrics/mark-deprecation .app-metrics. :deprecation-version-approvals-put) => nil
         (api/load-application .application-id. .db.) => {:team_id .team-id.
                                                          :id      .application-id.})))))
+
+(t/deftest ^:unit created-or-updated-app
+  (t/is (= {:id "x" :a nil :b 2 :c 3 :last_modified_by "bob"}
+           (api/created-or-updated-app {:id "x" :a nil :b 2} {:b nil :c 3} "bob"))
+        "should not update fields to nil")
+  (t/is (= {:id "x" :a true :b false :c true :d false :last_modified_by "bob"}
+           (api/created-or-updated-app {:id "x" :a false :b true :c true :d false}
+                                       {:id "x" :a true :b false}
+                                       "bob"))
+        "boolean fields should be updated to match their value in new-app")
+  (t/is (= {:id "x" :a 1 :last_modified_by "bar"}
+           (api/created-or-updated-app {:id "x" :last_modified_by "foo"}
+                                       {:a 1}
+                                       "bar"))
+        ":last_modified_by should be updated")
+  (t/is (= {:id "x" :a 1 :b 2 :last_modified_by "bob"}
+           (api/created-or-updated-app {:id "x" :a 1}
+                                       {:id "y" :b 2}
+                                       "bob"))
+        ":id should never be updated"))
