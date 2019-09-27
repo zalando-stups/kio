@@ -157,12 +157,6 @@
           status          (:status response)]
       (= 200 status))))
 
-(defn merge-app-fields [old-fields new-fields]
-  {:pre  [(map? old-fields)
-          (map? new-fields)]
-   :post [(map? %)]}
-  (merge old-fields new-fields))
-
 (defn default-fields [creator-user-id]
   {:incident_contact    nil
    :specification_url   nil
@@ -195,7 +189,7 @@
   (let [old-app       (or old-app (default-fields user-id))
         new-app       (into {} (filter value-not-nil? new-app))
         app-id        (or (:id old-app) (:id new-app))
-        merged-fields (merge-app-fields old-app new-app)]
+        merged-fields (merge old-app new-app)]
     (assoc merged-fields
       :id app-id
       :last_modified_by user-id)))
