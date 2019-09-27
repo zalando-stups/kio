@@ -194,8 +194,11 @@
                   (select-keys % (keys new-app)))]}
   (let [old-app       (or old-app (default-fields user-id))
         new-app       (into {} (filter value-not-nil? new-app))
+        app-id        (or (:id old-app) (:id new-app))
         merged-fields (merge-app-fields old-app new-app)]
-    (assoc merged-fields :last_modified_by user-id)))
+    (assoc merged-fields
+      :id app-id
+      :last_modified_by user-id)))
 
 (defn create-or-update-application! [{:keys [application application_id]} request {:keys [db http-audit-logger]}]
   (let [uid                  (from-token request "uid")

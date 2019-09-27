@@ -275,9 +275,22 @@
         (api/load-application .application-id. .db.) => {:team_id .team-id.
                                                          :id      .application-id.})))))
 
-(t/deftest ^:unit merge-app-fields
-  (t/testing "can toggle the active status"
-    (t/is (= {:active false}
-             (api/merge-app-fields {:active true} {:active false})))
-    (t/is (= {:active true}
-             (api/merge-app-fields {:active false} {:active true})))))
+(t/deftest ^:unit created-or-updated-app
+  (t/is (= {:id "x" :a nil :b 2 :c 3 :last_modified_by "bob"}
+           (api/created-or-updated-app {:id "x" :a nil :b 2} {:b nil :c 3} "bob"))
+        "should not update fields to nil")
+  (t/is (= {:id "x" :a true :b false :c true :d false :last_modified_by "bob"}
+           (api/created-or-updated-app {:id "x" :a false :b true :c true :d false}
+                                       {:id "x" :a true :b false}
+                                       "bob"))
+        "boolean fields should be updated to match their value in new-app")
+  (t/is (= {:id "x" :a 1 :last_modified_by "bar"}
+           (api/created-or-updated-app {:id "x" :last_modified_by "foo"}
+                                       {:a 1}
+                                       "bar"))
+        ":last_modified_by should be updated")
+  (t/is (= {:id "x" :a 1 :b 2 :last_modified_by "bob"}
+           (api/created-or-updated-app {:id "x" :a 1}
+                                       {:id "y" :b 2}
+                                       "bob"))
+        ":id should never be updated"))
