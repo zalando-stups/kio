@@ -180,7 +180,6 @@
 
 (defn created-or-updated-app [old-app new-app user-id]
   {:pre  [(map? new-app)
-          (every? value-not-nil? new-app)
           (if (nil? old-app)
             (contains? new-app :id)
             (and (map? old-app)
@@ -190,8 +189,11 @@
           (seq %)
           (= (:last_modified_by %) user-id)
           (or (some? old-app)
-              (= (:created_by %) user-id))]}
+              (= (:created_by %) user-id))
+          (every? value-not-nil?                            ;; no new field is set to nil
+                  (select-keys % (keys new-app)))]}
   (let [old-app       (or old-app (default-fields user-id))
+        new-app       (into {} (filter value-not-nil? new-app))
         merged-fields (merge-app-fields old-app new-app)]
     (assoc merged-fields :last_modified_by user-id)))
 
@@ -199,8 +201,7 @@
   (let [uid                  (from-token request "uid")
         existing_application (load-application application_id db)
         existing_team_id     (:team_id existing_application)
-        team_id              (:team_id application)
-        application          (into {} (filter value-not-nil? application))]
+        team_id              (:team_id application)]
 
     (if (nil? existing_application)
       (require-write-authorization request team_id)
