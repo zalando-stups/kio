@@ -176,8 +176,11 @@
    :criticality_level   2
    :created_by          uid})
 
+(defn- value-not-nil? [[_ v]] (some? v))
+
 (defn created-or-updated-app [old-app new-app user-id]
   {:pre  [(map? new-app)
+          (every? value-not-nil? new-app)
           (if (nil? old-app)
             (contains? new-app :id)
             (and (map? old-app)
@@ -196,7 +199,8 @@
   (let [uid                  (from-token request "uid")
         existing_application (load-application application_id db)
         existing_team_id     (:team_id existing_application)
-        team_id              (:team_id application)]
+        team_id              (:team_id application)
+        application          (into {} (filter value-not-nil? application))]
 
     (if (nil? existing_application)
       (require-write-authorization request team_id)
