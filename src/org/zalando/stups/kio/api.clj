@@ -182,7 +182,7 @@
             (contains? new-app :id)
             (and (map? old-app)
                  (contains? old-app :id)))
-          (seq (name user-id))]
+          (not (clojure.string/blank? user-id))]
    :post [(map? %)
           (seq %)
           (= (:last_modified_by %) user-id)
