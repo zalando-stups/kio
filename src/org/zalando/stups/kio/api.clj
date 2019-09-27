@@ -160,8 +160,7 @@
 (defn merge-app-fields [old-fields new-fields]
   {:pre  [(map? old-fields)
           (map? new-fields)]
-   :post [(map? %)
-          (seq %)]}
+   :post [(map? %)]}
   (merge old-fields new-fields))
 
 (defn default-fields [uid]
