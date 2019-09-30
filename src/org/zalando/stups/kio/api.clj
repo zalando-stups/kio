@@ -88,7 +88,7 @@
 
 ;;https://github.com/clojure/core.memoize/blob/master/docs/Using.md#overriding-the-cache-keys
 (defn ^{:clojure.core.memoize/args-fn first}
-  read-applications-into-string
+read-applications-into-string
   [params db-spec]
   (let [result (sql/cmd-read-applications params {:connection db-spec})]
     (when (not-empty result)
@@ -157,45 +157,18 @@
           status          (:status response)]
       (= 200 status))))
 
-(defn default-fields [creator-user-id]
-  {:incident_contact    nil
-   :specification_url   nil
-   :documentation_url   nil
-   :subtitle            nil
-   :scm_url             nil
-   :service_url         nil
-   :description         nil
-   :specification_type  nil
-   :publicly_accessible false
-   :criticality_level   2
-   :created_by          creator-user-id})
-
-(defn- value-not-nil? [[_ v]] (some? v))
-
-(defn created-or-updated-app [old-app new-app user-id]
-  {:pre  [(map? new-app)
-          (if (nil? old-app)
-            (contains? new-app :id)
-            (and (map? old-app)
-                 (contains? old-app :id)))
-          (not (clojure.string/blank? user-id))]
-   :post [(map? %)
-          (seq %)
-          (= (:last_modified_by %) user-id)
-          (or (some? old-app)
-              (= (:created_by %) user-id))
-          (every? value-not-nil?                            ;; no new field is set to nil
-                  (select-keys % (keys new-app)))]}
-  (let [old-app       (or old-app (default-fields user-id))
-        new-app       (into {} (filter value-not-nil? new-app))
-        app-id        (or (:id old-app) (:id new-app))
-        merged-fields (merge old-app new-app)]
-    (assoc merged-fields
-      :id app-id
-      :last_modified_by user-id)))
-
 (defn create-or-update-application! [{:keys [application application_id]} request {:keys [db http-audit-logger]}]
   (let [uid                  (from-token request "uid")
+        defaults             {:incident_contact    nil
+                              :specification_url   nil
+                              :documentation_url   nil
+                              :subtitle            nil
+                              :scm_url             nil
+                              :service_url         nil
+                              :description         nil
+                              :specification_type  nil
+                              :publicly_accessible false
+                              :criticality_level   2}
         existing_application (load-application application_id db)
         existing_team_id     (:team_id existing_application)
         team_id              (:team_id application)]
@@ -206,9 +179,13 @@
 
     (if (or (= team_id existing_team_id)
             (team-exists? request (:team_id application)))
-      (let [app-to-save (created-or-updated-app existing_application application uid)
+      (let [app-to-save (merge-with #(or %2 %1) (or existing_application defaults) application {:id               application_id
+                                                                                                :last_modified_by uid
+                                                                                                :created_by       uid})
             log-fn      (:log-fn http-audit-logger)]
-        (sql/cmd-create-or-update-application! app-to-save {:connection db})
+        (sql/cmd-create-or-update-application!
+          app-to-save
+          {:connection db})
         (log-fn (audit/app-modified
                   (tokeninfo request)
                   app-to-save))
