@@ -172,23 +172,20 @@
 
 (defn- value-not-nil? [[_ v]] (some? v))
 
-(defn created-or-updated-app [old-app new-app user-id]
+(defn created-or-updated-app [app-id old-app new-app user-id]
   {:pre  [(map? new-app)
-          (if (nil? old-app)
-            (contains? new-app :id)
-            (and (map? old-app)
-                 (contains? old-app :id)))
+          (not (clojure.string/blank? app-id))
           (not (clojure.string/blank? user-id))]
    :post [(map? %)
           (seq %)
           (= (:last_modified_by %) user-id)
           (or (some? old-app)
               (= (:created_by %) user-id))
+          (= (:id %) app-id)
           (every? value-not-nil?                            ;; no new field is set to nil
                   (select-keys % (keys new-app)))]}
   (let [old-app       (or old-app (default-fields user-id))
         new-app       (into {} (filter value-not-nil? new-app))
-        app-id        (or (:id old-app) (:id new-app))
         merged-fields (merge old-app new-app)]
     (assoc merged-fields
       :id app-id
@@ -206,7 +203,7 @@
 
     (if (or (= team_id existing_team_id)
             (team-exists? request (:team_id application)))
-      (let [app-to-save (created-or-updated-app existing_application application uid)
+      (let [app-to-save (created-or-updated-app application_id existing_application application uid)
             log-fn      (:log-fn http-audit-logger)]
         (sql/cmd-create-or-update-application! app-to-save {:connection db})
         (log-fn (audit/app-modified
