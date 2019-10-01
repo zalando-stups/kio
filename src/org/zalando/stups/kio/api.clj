@@ -203,14 +203,24 @@
 
     (if (or (= team_id existing_team_id)
             (team-exists? request (:team_id application)))
-      (let [app-to-save (created-or-updated-app application_id existing_application application uid)
-            log-fn      (:log-fn http-audit-logger)]
-        (sql/cmd-create-or-update-application! app-to-save {:connection db})
-        (log-fn (audit/app-modified
-                  (tokeninfo request)
-                  app-to-save))
-        (log/audit "Created/updated application %s using data %s." application_id application)
-        (response nil))
+      (try
+        (let [app-to-save (created-or-updated-app application_id existing_application application uid)
+              log-fn      (:log-fn http-audit-logger)]
+          (sql/cmd-create-or-update-application! app-to-save {:connection db})
+          (log-fn (audit/app-modified
+                    (tokeninfo request)
+                    app-to-save))
+          (log/audit "Created/updated application %s using data %s." application_id application)
+          (response nil))
+        (catch AssertionError err
+          (-> {:message        (format "Internal inconsistency: %s" (.getMessage err))
+               :application_id application_id
+               :old-app        existing_application
+               :new-app        application
+               :uid            uid}
+              (response)
+              (status 500)
+              (content-type-json))))
       (-> {:message (format "Team %s does not exist." team_id)}
           (response)
           (status 400)
