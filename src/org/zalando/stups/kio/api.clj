@@ -181,9 +181,7 @@
           (= (:last_modified_by %) user-id)
           (or (some? old-app)
               (= (:created_by %) user-id))
-          (= (:id %) app-id)
-          (every? value-not-nil?                            ;; no new field is set to nil
-                  (select-keys % (keys new-app)))]}
+          (= (:id %) app-id)]}
   (let [old-app       (or old-app (default-fields user-id))
         new-app       (into {} (filter value-not-nil? new-app))
         merged-fields (merge old-app new-app)]
