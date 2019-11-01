@@ -209,7 +209,7 @@ paths:
                 example: Github
               criticality_level:
                 type: integer
-                description: The criticality level of the application
+                description: The criticality level (tier) of the application
                 example: 2
               last_modified:
                 type: string
@@ -564,11 +564,11 @@ definitions:
         description: URL of the specification tool
         example: https://github.com/zalando-stups/kio/issues
       criticality_level:
-        description: Criticality level of an application
+        description: Criticality level (tier) of an application
         type: integer
-        minimum: 1 # low
-        maximum: 3 # high
-        default: 2 # medium
+        minimum: 1 # Tier-1
+        maximum: 3 # Tier-3
+        default: 2 # Tier-2
         example: 2
       required_approvers:
         type: integer
