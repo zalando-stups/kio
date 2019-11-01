@@ -567,7 +567,7 @@ definitions:
         description: Criticality level (tier) of an application
         type: integer
         minimum: 1 # Tier-1
-        maximum: 3 # Tier-3
+        maximum: 4 # not relevant
         example: 2
       required_approvers:
         type: integer
