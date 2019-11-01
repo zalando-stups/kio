@@ -167,7 +167,7 @@
    :description         nil
    :specification_type  nil
    :publicly_accessible false
-   :criticality_level   2
+   :criticality_level   nil
    :created_by          creator-user-id})
 
 (defn- value-not-nil? [[_ v]] (some? v))
