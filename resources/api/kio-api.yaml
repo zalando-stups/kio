@@ -97,6 +97,10 @@ paths:
                   type: boolean
                   description: If this appliation is active, ie gets credentials
                   example: true
+                criticality_level:
+                  type: integer
+                  description: The criticality level (tier) of the application
+                  example: 2
                 name:
                   type: string
                   description: A human-readable name of the application
