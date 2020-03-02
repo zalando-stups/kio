@@ -12,7 +12,7 @@ pipeline:
   commands:
   - desc: Run unit tests
     cmd: |
-      docker run -d -p 5432:5432 postgres
+      docker run -d -p 5432:5432 postgres:9.6
       lein test
   - desc: Build and push docker image
     cmd: |
