@@ -163,6 +163,7 @@
    :documentation_url   nil
    :subtitle            nil
    :scm_url             nil
+   :support_url         nil
    :service_url         nil
    :description         nil
    :specification_type  nil

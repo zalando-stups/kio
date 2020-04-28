@@ -136,6 +136,9 @@ paths:
                 matched_description:
                   type: string
                   description: Text fragments of the search result
+                support_url:
+                  type: string
+                  description: URL Where to contact for support
               required:
                 - id
                 - team_id
@@ -566,6 +569,10 @@ definitions:
       specification_url:
         type: string
         description: URL of the specification tool
+        example: https://github.com/zalando-stups/kio/issues
+      support_url:
+        type: string
+        description: URL of filing support requests
         example: https://github.com/zalando-stups/kio/issues
       criticality_level:
         description: Criticality level (tier) of an application
