@@ -13,10 +13,12 @@
 ; limitations under the License.
 
 (ns org.zalando.stups.kio.sql
-  (:require [yesql.core :refer [defqueries]]
+  (:require [environ.core :as  env]
+            [yesql.core :refer [defqueries]]
             [org.zalando.stups.friboo.system.db :refer [def-db-component generate-hystrix-commands]]))
 
-(def-db-component DB :auto-migration? true)
+;;USE env variable AUTO_MIGRATION to configure auto-migration?
+(def-db-component DB :auto-migration? (Boolean/parseBoolean (env/env :auto-migration)))
 
 (def default-db-configuration
   {:db-classname   "org.postgresql.Driver"
