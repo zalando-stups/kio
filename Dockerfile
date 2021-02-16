@@ -14,6 +14,7 @@ RUN update-ca-certificates
 COPY resources/api/kio-api.yaml /zalando-apis/
 COPY target/kio.jar /
 COPY java-dynamic-memory-opts /bin/java-dynamic-memory-opts
+RUN  chmod +x /bin/java-dynamic-memory-opts
 
 EXPOSE 8080
 ENV HTTP_PORT=8080
