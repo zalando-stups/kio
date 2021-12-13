@@ -8,7 +8,19 @@
   :min-lein-version "2.0.0"
 
   :dependencies [[org.clojure/clojure "1.10.0"]
-                 [org.zalando.stups/friboo "1.13.0"]
+                 [org.apache.logging.log4j/log4j-1.2-api "2.15.0"]
+                 [org.apache.logging.log4j/log4j-api "2.15.0"]
+                 [org.apache.logging.log4j/log4j-core "2.15.0"]
+                 [org.apache.logging.log4j/log4j-jcl "2.15.0"]
+                 [org.apache.logging.log4j/log4j-jul "2.15.0"]
+                 [org.apache.logging.log4j/log4j-slf4j-impl "2.15.0"]
+                 [org.zalando.stups/friboo "1.13.0"
+                  :exclusions [org.apache.logging.log4j/log4j-api
+                               org.apache.logging.log4j/log4j-core
+                               org.apache.logging.log4j/log4j-slf4j-impl
+                               org.apache.logging.log4j/log4j-jcl
+                               org.apache.logging.log4j/log4j-1.2-api
+                               org.apache.logging.log4j/log4j-jul]]
                  [clj-time "0.13.0"]
                  [org.zalando.stups/tokens "0.11.0-beta-2"]
                  [yesql "0.5.3"]
@@ -25,8 +37,8 @@
             [lein-cloverage "1.0.7-SNAPSHOT"]]
 
   :docker {:image-name #=(eval (str (some-> (System/getenv "DEFAULT_DOCKER_REGISTRY")
-                                      (str "/"))
-                                 "stups/kio"))}
+                                            (str "/"))
+                                    "stups/kio"))}
 
   :release-tasks [["vcs" "assert-committed"]
                   ["clean"]
