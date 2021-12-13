@@ -8,6 +8,12 @@
   :min-lein-version "2.0.0"
 
   :dependencies [[org.clojure/clojure "1.10.0"]
+                 [org.apache.logging.log4j/log4j-api "2.15.0"]
+                 [org.apache.logging.log4j/log4j-core "2.15.0"]
+                 [org.apache.logging.log4j/log4j-slf4j-impl "2.15.0"]
+                 [org.apache.logging.log4j/log4j-jcl "2.15.0"]
+                 [org.apache.logging.log4j/log4j-1.2-api "2.15.0"]
+                 [org.apache.logging.log4j/log4j-jul "2.15.0"]
                  [org.zalando.stups/friboo "1.13.0"]
                  [clj-time "0.13.0"]
                  [org.zalando.stups/tokens "0.11.0-beta-2"]
