@@ -113,11 +113,13 @@
         (-> (if (and (nil? team_id) (nil? incident_contact))
               (read-application-memo params db)
               (sql/cmd-read-applications params conn))
+            (enrich-applications)
             (response)
             (content-type-json)))
       (do
         (log/debug "Search in applications with term %s." search)
         (-> (sql/cmd-search-applications params conn)
+            (enrich-applications)
             (response)
             (content-type-json))))))
 

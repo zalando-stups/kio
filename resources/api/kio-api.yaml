@@ -130,6 +130,10 @@ paths:
                   format: date-time
                   description: Point in time when the application was created or last modified.
                   example: '2015-04-25T16:25:00.000Z'
+                last_modified_by:
+                  type: string
+                  description: Who modified the application last
+                  example: npiccolotto
                 matched_rank:
                   type: number
                   description: Search result rank for ordering
@@ -139,6 +143,35 @@ paths:
                 support_url:
                   type: string
                   description: URL Where to contact for support
+                description:
+                  type: string
+                  description: Purpose of this application
+                  example: Kio manages all application base information.
+                required_approvers:
+                  type: integer
+                  description: Minimum number of approvers needed for a version. Used by fullstop. Deprecated, will be removed in the future.
+                  example: 2
+                specification_type:
+                  type: string
+                  description: Where tickets for the application are managed
+                  example: Github
+                created:
+                  type: string
+                  format: date-time
+                  description: Point in time when the application was created.
+                  example: '2015-04-25T16:25:00.000Z'
+                created_by:
+                  type: string
+                  description: Who created the application
+                  example: npiccolotto
+                publicly_accessible:
+                  type: boolean
+                  description: |
+                    Marks an app as "publicly available" (on the internet). A public app usually has a landing or login
+                    page and does not expose confidential data to unauthorized users. Examples are: Blogs, Job Portals,
+                    Shops, and so on. Secured (REST)-APIs and micro services are no public endpoints, even if they are
+                    available over the internet.
+                  example: true
               required:
                 - id
                 - team_id
