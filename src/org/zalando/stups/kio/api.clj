@@ -113,11 +113,13 @@
         (-> (if (and (nil? team_id) (nil? incident_contact))
               (read-application-memo params db)
               (sql/cmd-read-applications params conn))
+            (enrich-applications)
             (response)
             (content-type-json)))
       (do
         (log/debug "Search in applications with term %s." search)
         (-> (sql/cmd-search-applications params conn)
+            (enrich-applications)
             (response)
             (content-type-json))))))
 
@@ -128,10 +130,20 @@
                                 {:connection db})
       (first)))
 
+(defn enrich-application
+  "Adds calculated field(s) to an application"
+  [application]
+  (assoc application :required_approvers (if (= (:criticality_level application) 1) 1 2)))
+
+(defn enrich-applications
+  [applications]
+  (map enrich-application applications))
+
 (defn read-application [{:keys [application_id]} request {:keys [db]}]
   (u/require-realms #{"employees" "services"} request)
   (log/debug "Read application %s." application_id)
   (-> (sql/cmd-read-application {:id application_id} {:connection db})
+      (enrich-applications)
       (single-response)
       (content-type-json)))
 

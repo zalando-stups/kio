@@ -15,6 +15,13 @@
     (let [data (ex-data e)]
       (= status (:http-code data)))))
 
+(t/deftest ^:unit enrich-application
+  (facts "enrich-application"
+    (fact "it properly sets required_approvers"
+      (api/enrich-application {:criticality_level 1}) => (contains {:required_approvers 1})
+      (api/enrich-application {:criticality_level 2}) => (contains {:required_approvers 2})
+      (api/enrich-application {:criticality_level 3}) => (contains {:required_approvers 2}))))
+
 (t/deftest ^:unit test-read-access
   (facts "read stuff"
     (fact "applications without search - cached empty response [will fail on rerun in the same REPL => db call is memoized]"
@@ -43,6 +50,12 @@
                                            "realm" "services"}}
         .params. =contains=> {:search "foo bar"}
         (sql/cmd-search-applications anything {:connection .db.}) => []))
+    (fact "single app - service request [will fail on rerun in the same REPL => db call is memoized]"
+      (api/read-application {:application_id "foo"} .request. {:db .db.}) => (contains {:body {:id "foo" :required_approvers 2}})
+      (provided
+        .request. =contains=> {:tokeninfo {"uid"   "nikolaus"
+                                           "realm" "services"}}
+        (sql/cmd-read-application anything {:connection .db.}) => [{:id "foo"}]))
     (fact "single app"
       (api/read-application {:application_id "foo1"} .request. {:db .db.}) => (contains {:body {} :status 404})
       (provided

@@ -147,6 +147,10 @@ paths:
                   type: string
                   description: Purpose of this application
                   example: Kio manages all application base information.
+                required_approvers:
+                  type: integer
+                  description: Minimum number of approvers needed for a version. Used by fullstop. Deprecated, will be removed in the future.
+                  example: 2
                 specification_type:
                   type: string
                   description: Where tickets for the application are managed
@@ -235,6 +239,10 @@ paths:
                 type: string
                 description: URL of the specification tool
                 example: https://github.com/zalando-stups/kio/issues
+              required_approvers:
+                type: integer
+                description: Minimum number of approvers needed for a version. Used by fullstop. Deprecated, will be removed in the future.
+                example: 2
               specification_type:
                 type: string
                 description: Where tickets for the application are managed
@@ -605,6 +613,12 @@ definitions:
         minimum: 1 # Tier-1
         maximum: 4 # not relevant
         example: 2
+      required_approvers:
+        type: integer
+        minimum: 1
+        description: DEPRECATED! WILL BE REMOVED IN NEXT RELASE! Minimum number of approvers needed for a version. Used by fullstop.
+        example: 2
+        default: 2
       specification_type:
         type: string
         description: Where tickets for the application are managed
