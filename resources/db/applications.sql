@@ -11,7 +11,13 @@ SELECT a_id as id,
        a_scm_url as scm_url,
        a_documentation_url as documentation_url,
        a_specification_url as specification_url,
-       a_last_modified as last_modified
+       a_last_modified as last_modified,
+       a_last_modified_by as last_modified_by,
+       a_description as description,
+       a_specification_type as specification_type,
+       a_created as created,
+       a_created_by as created_by,
+       a_publicly_accessible as publicly_accessible
   FROM zk_data.application
  WHERE a_last_modified <= COALESCE(:modified_before, a_last_modified)
    AND a_last_modified >= COALESCE(:modified_after, a_last_modified)
@@ -33,7 +39,14 @@ FROM (
                 a_scm_url as scm_url,
                 a_documentation_url as documentation_url,
                 a_specification_url as specification_url,
-                a_last_modified as last_modified
+                a_last_modified as last_modified,
+                a_last_modified_by as last_modified_by,
+                a_description as description,
+                a_specification_type as specification_type,
+                a_criticality_level as criticality_level,
+                a_created as created,
+                a_created_by as created_by,
+                a_publicly_accessible as publicly_accessible
          FROM zk_data.application
          WHERE a_last_modified <= COALESCE(:modified_before, a_last_modified)
            AND a_last_modified >= COALESCE(:modified_after, a_last_modified)
@@ -55,6 +68,13 @@ FROM (
          a_documentation_url as documentation_url,
          a_specification_url as specification_url,
          a_last_modified as last_modified,
+         a_last_modified_by as last_modified_by,
+         a_description as description,
+         a_specification_type as specification_type,
+         a_criticality_level as criticality_level,
+         a_created as created,
+         a_created_by as created_by,
+         a_publicly_accessible as publicly_accessible,
          ts_rank_cd(vector, query) AS matched_rank,
          ts_headline('english', a_id || ' ' ||
                                 a_name || ' ' ||
@@ -72,7 +92,13 @@ FROM (
                  a_documentation_url,
                  a_specification_url,
                  a_last_modified,
+                 a_last_modified_by,
                  a_description,
+                 a_specification_type,
+                 a_criticality_level,
+                 a_created,
+                 a_created_by,
+                 a_publicly_accessible,
                  setweight(to_tsvector('english', a_id), 'A')
                  || setweight(to_tsvector('english', a_name), 'B')
                  || setweight(to_tsvector('english', COALESCE(a_subtitle, '')), 'C')
