@@ -1,4 +1,4 @@
-FROM registry.opensource.zalan.do/library/openjdk-8:latest
+FROM container-registry.zalando.net/library/eclipse-temurin-8-jdk:latest
 
 MAINTAINER Zalando SE
 

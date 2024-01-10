@@ -4,7 +4,9 @@ pipeline:
   env:
     LEIN_ROOT: true
   type: script
-  overlay: ci/clojure-for-cdp
+  vm_config:
+    type: linux
+    image: "cdp-runtime/jdk8-clojure"
   artifacts:
   - type: docs
     name: automata-databases
