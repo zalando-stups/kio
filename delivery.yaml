@@ -1,4 +1,10 @@
 version: '2017-09-20'
+
+dependencies:
+  - id: java
+    type: docker
+    ref: registry.opensource.zalan.do/library/eclipse-temurin-8-jdk
+
 pipeline:
 - id: build
   env:
