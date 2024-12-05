@@ -20,28 +20,4 @@ pipeline:
   commands:
   - desc: Run unit tests
     cmd: |
-      docker run -d -p 5432:5432 postgres:12.1
-      lein test
-  - desc: Build and push docker image
-    cmd: |
-      lein do clean, uberjar
-      IMAGE="pierone.stups.zalan.do/automata/kio:${CDP_BUILD_VERSION}"
-      docker build -t "$IMAGE" .
-      if [ -z "$CDP_PULL_REQUEST_NUMBER" ]; then
-        docker push "$IMAGE"
-      fi
-      TEST_IMAGE="pierone.stups.zalan.do/automata/kio-test:${CDP_BUILD_VERSION}"
-      docker tag "$IMAGE" "$TEST_IMAGE"
-      docker push "$TEST_IMAGE"
-  - desc: Generate database docs
-    cmd: |
-      mkdir schema
-      if [ -z "$CDP_PULL_REQUEST_NUMBER" ]; then
-        DOCS_PATH=schema/kio
-
-        wget https://github.com/schemaspy/schemaspy/releases/download/v6.0.0/schemaspy-6.0.0.jar -O schema.jar
-
-        wget https://jdbc.postgresql.org/download/postgresql-42.2.4.jar
-
-        java -jar schema.jar -t pgsql -s zk_data -db postgres -u postgres -host localhost -o $DOCS_PATH -dp postgresql-42.2.4.jar -noads
-      fi
+      git gh-comment test
